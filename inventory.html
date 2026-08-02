@@ -6,6 +6,8 @@
     <title>Stok Inventory - Ritel Express</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Pustaka Barcode Scanner Kamera (Html5-Qrcode) -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -15,10 +17,10 @@
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else if (activeUser.role !== 'Inventory' && activeUser.role !== 'Admin') {
             alert("Anda tidak memiliki hak akses sebagai Staf Inventory!");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
     </script>
 </head>
@@ -54,11 +56,28 @@
                     <p class="text-sm text-slate-500">Perubahan stok di sini langsung memperbarui database Google Sheets secara otomatis.</p>
                 </div>
                 <div class="flex gap-3">
-                    <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Cari nama barang..." class="bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm w-64 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <button onclick="addNewProductPrompt()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
+                    <!-- Tombol Buka Kamera Scanner -->
+                    <button onclick="startScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-camera"></i> Scan Kamera
+                    </button>
+                    <button onclick="addNewProductPrompt()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Tambah Barang Baru
                     </button>
                 </div>
+            </div>
+
+            <!-- Kotak Kamera Scanner (Awalnya Tersembunyi) -->
+            <div id="reader-container" class="hidden mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Scan Barcode untuk Cek/Restock</span>
+                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg">Tutup</button>
+                </div>
+                <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
+            </div>
+
+            <!-- Kolom Pencarian Teks -->
+            <div class="mb-4">
+                <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Atau ketik nama / barcode barang di sini..." class="w-full bg-white px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
             <!-- Tabel Stok -->
@@ -87,6 +106,7 @@
         const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
         let products = [];
+        let html5QrCode = null;
 
         // Tampilkan nama staf dari sesi aktif
         document.getElementById('staff-name').innerText = activeUser.nama_lengkap;
@@ -94,7 +114,7 @@
 
         function logout() {
             localStorage.removeItem('ritel_active_user');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         // Ambil data produk dari Google Sheets
@@ -143,27 +163,67 @@
 
         function filterInventory() {
             const query = document.getElementById('inventory-search').value.toLowerCase();
-            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(query) || String(p.Barcode).includes(query));
+            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(query) || String(p.Barcode).toLowerCase().includes(query));
             renderInventory(filtered);
+        }
+
+        // --- FUNGSI SCANNER KAMERA DI INVENTORY ---
+        function startScanner() {
+            document.getElementById('reader-container').classList.remove('hidden');
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 140 }
+                },
+                (decodedText, decodedResult) => {
+                    console.log(`Barcode Gudang terbaca: ${decodedText}`);
+                    stopScanner();
+                    
+                    // Otomatis cari produk dan langsung arahkan untuk restock
+                    restockItem(decodedText);
+                },
+                (errorMessage) => {}
+            ).catch((err) => {
+                alert("Gagal membuka kamera. Periksa izin akses kamera browser Anda.");
+                document.getElementById('reader-container').classList.add('hidden');
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader-container').classList.add('hidden');
+                }).catch((err) => {
+                    document.getElementById('reader-container').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('reader-container').classList.add('hidden');
+            }
         }
 
         async function restockItem(barcode) {
             const p = products.find(item => String(item.Barcode) === String(barcode));
-            if (p) {
-                let addQty = prompt(`Masukkan jumlah penambahan stok untuk ${p["Nama Barang"]}:`, "10");
-                if (addQty && !isNaN(addQty)) {
-                    p.Stok = Number(p.Stok) + Number(addQty);
-                    
-                    try {
-                        await fetch(API_URL, {
-                            method: "POST",
-                            body: JSON.stringify({ action: "updateStock", barcode: p.Barcode, newStock: p.Stok })
-                        });
-                    } catch(e) {}
+            if (!p) {
+                alert(`Barang dengan Barcode "${barcode}" tidak ditemukan di database gudang!`);
+                return;
+            }
 
-                    renderInventory(products);
-                    alert(`Stok ${p["Nama Barang"]} berhasil ditambah!`);
-                }
+            let addQty = prompt(`[ ${p["Nama Barang"]} ]\nStok saat ini: ${p.Stok}\nMasukkan jumlah penambahan stok:`, "10");
+            if (addQty && !isNaN(addQty)) {
+                p.Stok = Number(p.Stok) + Number(addQty);
+                
+                try {
+                    await fetch(API_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "updateStock", barcode: p.Barcode, newStock: p.Stok })
+                    });
+                } catch(e) {}
+
+                renderInventory(products);
+                alert(`Stok ${p["Nama Barang"]} berhasil ditambah!`);
             }
         }
 
