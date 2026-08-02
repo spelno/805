@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Inventory - Ritel Express</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+    <script>
+        // --- PENGAMAN SESI (SECURITY GUARD) ---
+        const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
+        if (!activeUser) {
+            alert("Akses ditolak! Silakan login terlebih dahulu.");
+            window.location.href = 'login.html';
+        } else if (activeUser.role !== 'Inventory' && activeUser.role !== 'Admin') {
+            alert("Anda tidak memiliki hak akses sebagai Staf Inventory!");
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
+
+    <!-- HEADER INVENTORY -->
+    <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
+                <p class="text-xs text-red-100 font-medium">Manajemen Gudang & Stok</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p id="staff-name" class="text-sm font-bold">Staf Gudang</p>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white">Keluar Akun</button>
+            </div>
+            <div id="staff-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">G</div>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA INVENTORY -->
+    <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">Kontrol Stok & Produk</h2>
+                    <p class="text-sm text-slate-500">Perubahan stok di sini langsung memperbarui database Google Sheets secara otomatis.</p>
+                </div>
+                <div class="flex gap-3">
+                    <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Cari nama barang..." class="bg-white px-4 py-2 rounded-xl border border-slate-200 text-sm w-64 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <button onclick="addNewProductPrompt()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Tambah Barang Baru
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Stok -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-red-50 text-red-700 border-b border-slate-200 font-bold">
+                            <th class="p-4">Barcode</th>
+                            <th class="p-4">Nama Barang</th>
+                            <th class="p-4">Kategori</th>
+                            <th class="p-4">Harga Jual</th>
+                            <th class="p-4 text-center">Sisa Stok</th>
+                            <th class="p-4 text-center">Aksi (Restock)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body" class="divide-y divide-slate-100">
+                        <tr><td colspan="6" class="p-8 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ⚠️ GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
+        const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
+
+        let products = [];
+
+        // Tampilkan nama staf dari sesi aktif
+        document.getElementById('staff-name').innerText = activeUser.nama_lengkap;
+        document.getElementById('staff-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
+
+        function logout() {
+            localStorage.removeItem('ritel_active_user');
+            window.location.href = 'login.html';
+        }
+
+        // Ambil data produk dari Google Sheets
+        async function loadInventoryData() {
+            try {
+                let res = await fetch(`${API_URL}?action=getProducts`);
+                products = await res.json();
+                renderInventory(products);
+            } catch (err) {
+                console.warn("Gagal ambil data cloud, pakai data contoh lokal.");
+                products = [
+                    { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45, Ikon: "fa-bowl-rice" },
+                    { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12, Ikon: "fa-bottle-droplet" },
+                    { Barcode: 103, "Nama Barang": "Air Mineral Aqua 600ml", Kategori: "Minuman", "Harga Jual": 3500, Stok: 150, Ikon: "fa-bottle-water" }
+                ];
+                renderInventory(products);
+            }
+        }
+
+        function renderInventory(list) {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Barang tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            list.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-4 font-mono font-bold text-slate-500">${p.Barcode}</td>
+                        <td class="p-4 font-semibold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid ${p.Ikon || 'fa-box'} text-red-600"></i> ${p["Nama Barang"]}
+                        </td>
+                        <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs">${p.Kategori}</span></td>
+                        <td class="p-4 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
+                        <td class="p-4 text-center font-extrabold ${p.Stok > 10 ? 'text-slate-700' : 'text-red-600'}">${p.Stok} pcs</td>
+                        <td class="p-4 text-center">
+                            <button onclick="restockItem('${p.Barcode}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">Tambah Stok</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterInventory() {
+            const query = document.getElementById('inventory-search').value.toLowerCase();
+            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(query) || String(p.Barcode).includes(query));
+            renderInventory(filtered);
+        }
+
+        async function restockItem(barcode) {
+            const p = products.find(item => String(item.Barcode) === String(barcode));
+            if (p) {
+                let addQty = prompt(`Masukkan jumlah penambahan stok untuk ${p["Nama Barang"]}:`, "10");
+                if (addQty && !isNaN(addQty)) {
+                    p.Stok = Number(p.Stok) + Number(addQty);
+                    
+                    try {
+                        await fetch(API_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ action: "updateStock", barcode: p.Barcode, newStock: p.Stok })
+                        });
+                    } catch(e) {}
+
+                    renderInventory(products);
+                    alert(`Stok ${p["Nama Barang"]} berhasil ditambah!`);
+                }
+            }
+        }
+
+        async function addNewProductPrompt() {
+            let name = prompt("Masukkan Nama Barang Baru:");
+            if(!name) return;
+            let price = prompt("Masukkan Harga Jual (Contoh: 10000):", "10000");
+            let stock = prompt("Masukkan Stok Awal:", "50");
+            let newId = String(Date.now()).slice(-4);
+
+            let newProd = {
+                id: newId,
+                name: name,
+                category: "Umum",
+                price: Number(price) || 5000,
+                stock: Number(stock) || 10,
+                icon: "fa-box"
+            };
+
+            products.push({
+                Barcode: newProd.id,
+                "Nama Barang": newProd.name,
+                Kategori: newProd.category,
+                "Harga Jual": newProd.price,
+                Stok: newProd.stock,
+                Ikon: newProd.icon
+            });
+
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "addProduct", ...newProd })
+                });
+            } catch(e) {}
+
+            renderInventory(products);
+            alert(`Barang "${name}" berhasil ditambahkan ke database!`);
+        }
+
+        loadInventoryData();
+    </script>
+</body>
+</html>
