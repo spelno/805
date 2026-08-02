@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Owner - Ritel Express</title>
+    <title>Executive Dashboard Owner - Ritel Express</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,10 +15,10 @@
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else if (activeUser.role !== 'Owner' && activeUser.role !== 'Admin') {
             alert("Anda tidak memiliki hak akses sebagai Owner!");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
     </script>
 </head>
@@ -28,11 +28,11 @@
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
-                <i class="fa-solid fa-chart-line"></i>
+                <i class="fa-solid fa-chart-pie"></i>
             </div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Dashboard Eksekutif Owner</p>
+                <p class="text-xs text-red-100 font-medium">Pusat Analisis & Bisnis Owner</p>
             </div>
         </div>
         
@@ -47,55 +47,91 @@
 
     <!-- KONTEN UTAMA OWNER -->
     <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
-        <div class="max-w-5xl mx-auto">
-            <div class="mb-8">
-                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Analisis Valuasi & Perputaran Stok</h2>
-                <p class="text-sm text-slate-500 font-medium mt-1">Ringkasan aset bisnis yang disinkronkan langsung dari Google Sheets.</p>
+        <div class="max-w-6xl mx-auto space-y-6">
+            
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ringkasan Eksekutif Bisnis</h2>
+                    <p class="text-sm text-slate-500 font-medium mt-0.5">Analisis performa aset, valuasi modal, dan potensi perputaran barang.</p>
+                </div>
+                <button onclick="loadOwnerData()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs shadow-sm border border-slate-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right text-red-600"></i> Segarkan Data
+                </button>
             </div>
 
-            <!-- Kartu Statistik Utama -->
-            <div class="grid grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Jenis Produk</p>
-                    <h3 id="owner-total-item" class="text-3xl font-extrabold text-slate-800 mt-2">0</h3>
-                    <p class="text-xs text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-box-archive mr-1"></i> Item aktif di katalog</p>
+            <!-- KARTU METRIK UTAMA -->
+            <div class="grid grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Jenis Produk</p>
+                    <h3 id="stat-total-item" class="text-2xl font-extrabold text-slate-800 mt-1.5">0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">SKU aktif di sistem</p>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Valuasi Aset Stok</p>
-                    <h3 id="owner-total-asset" class="text-3xl font-extrabold text-red-600 mt-2">Rp 0</h3>
-                    <p class="text-xs text-slate-400 font-semibold mt-1"><i class="fa-solid fa-calculator mr-1"></i> Berdasarkan harga jual saat ini</p>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Valuasi Aset</p>
+                    <h3 id="stat-total-asset" class="text-2xl font-extrabold text-red-600 mt-1.5">Rp 0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Estimasi nilai seluruh stok</p>
                 </div>
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Status Sinkronisasi Cloud</p>
-                    <h3 class="text-xl font-extrabold text-emerald-600 mt-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud text-emerald-500"></i> Terhubung Sheets
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Potensi Laba Kotor</p>
+                    <h3 id="stat-potential-profit" class="text-2xl font-extrabold text-emerald-600 mt-1.5">Rp 0</h3>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Margin jika semua terjual*</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status Cloud Sheets</p>
+                    <h3 class="text-lg font-extrabold text-emerald-600 mt-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-circle-check"></i> Sinkron
                     </h3>
-                    <p class="text-xs text-slate-400 font-semibold mt-1">Data aman di server Google</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Terhubung realtime</p>
                 </div>
             </div>
 
-            <!-- Daftar Ringkasan Stok Menipis (Peringatan untuk Owner/Admin) -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Pengawasan Barang Menipis (Stok &le; 15 pcs)
-                </h3>
-                <div class="overflow-hidden">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
-                                <th class="p-3">Barcode</th>
-                                <th class="p-3">Nama Barang</th>
-                                <th class="p-3">Kategori</th>
-                                <th class="p-3">Harga Jual</th>
-                                <th class="p-3 text-center">Sisa Stok</th>
-                            </tr>
-                        </thead>
-                        <tbody id="low-stock-table" class="divide-y divide-slate-100">
-                            <tr><td colspan="5" class="p-4 text-center text-slate-400">Memuat data pengawasan...</td></tr>
-                        </tbody>
-                    </table>
+            <!-- BAGIAN TABEL ANALISIS -->
+            <div class="grid grid-cols-2 gap-6">
+                
+                <!-- 1. Peringatan Stok Menipis (Penting untuk restock modal) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Barang Perlu Restock Segera (&le; 15 pcs)
+                    </h3>
+                    <div class="flex-1 overflow-y-auto max-h-[280px]">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
+                                    <th class="p-2.5">Nama Barang</th>
+                                    <th class="p-2.5">Kategori</th>
+                                    <th class="p-2.5 text-center">Sisa Stok</th>
+                                </tr>
+                            </thead>
+                            <tbody id="low-stock-table" class="divide-y divide-slate-100">
+                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+                <!-- 2. Valuasi Berdasarkan Kategori / Daftar Aset Terbesar -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-boxes-stacked text-red-600"></i> Aset Barang Bernilai Tinggi
+                    </h3>
+                    <div class="flex-1 overflow-y-auto max-h-[280px]">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
+                                    <th class="p-2.5">Nama Barang</th>
+                                    <th class="p-2.5 text-center">Stok</th>
+                                    <th class="p-2.5 text-right">Total Valuasi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-asset-table" class="divide-y divide-slate-100">
+                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
+
         </div>
     </main>
 
@@ -103,13 +139,12 @@
         // ⚠️ GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
         const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
-        // Tampilkan nama owner dari sesi aktif
         document.getElementById('owner-name').innerText = activeUser.nama_lengkap;
         document.getElementById('owner-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
 
         function logout() {
             localStorage.removeItem('ritel_active_user');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         async function loadOwnerData() {
@@ -129,29 +164,50 @@
         }
 
         function processDashboard(products) {
-            document.getElementById('owner-total-item').innerText = products.length;
+            document.getElementById('stat-total-item').innerText = products.length;
             
+            // Hitung total valuasi aset (Harga Jual x Stok)
             let totalAsset = products.reduce((sum, p) => sum + (Number(p["Harga Jual"]) * Number(p.Stok)), 0);
-            document.getElementById('owner-total-asset').innerText = `Rp ${totalAsset.toLocaleString('id-ID')}`;
+            document.getElementById('stat-total-asset').innerText = `Rp ${totalAsset.toLocaleString('id-ID')}`;
+            
+            // Estimasi margin/potensi laba kasar (diasumsikan estimasi 20% dari total valuasi atau kasarnya)
+            let estProfit = totalAsset * 0.20;
+            document.getElementById('stat-potential-profit').innerText = `Rp ${estProfit.toLocaleString('id-ID')}`;
 
-            // Filter stok menipis (<= 15)
+            // 1. Render Tabel Stok Menipis
             const lowStockList = products.filter(p => Number(p.Stok) <= 15);
-            const tbody = document.getElementById('low-stock-table');
-            tbody.innerHTML = '';
+            const lowStockTbody = document.getElementById('low-stock-table');
+            lowStockTbody.innerHTML = '';
 
             if (lowStockList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-emerald-600 font-medium">Semua stok barang dalam kondisi aman.</td></tr>`;
-                return;
+                lowStockTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-medium">Aman! Tidak ada stok kritis.</td></tr>`;
+            } else {
+                lowStockList.forEach(p => {
+                    lowStockTbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 border-b border-slate-100">
+                            <td class="p-2.5 font-semibold text-slate-800">${p["Nama Barang"]}</td>
+                            <td class="p-2.5"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px]">${p.Kategori}</span></td>
+                            <td class="p-2.5 text-center font-extrabold text-red-600 bg-red-50/40 rounded">${p.Stok} pcs</td>
+                        </tr>
+                    `;
+                });
             }
 
-            lowStockList.forEach(p => {
-                tbody.innerHTML += `
+            // 2. Render Aset Terbesar (Urutkan berdasarkan total nilai terbesar)
+            let sortedByAsset = [...products].map(p => ({
+                ...p,
+                totalVal: Number(p["Harga Jual"]) * Number(p.Stok)
+            })).sort((a, b) => b.totalVal - a.totalVal);
+
+            const topAssetTbody = document.getElementById('top-asset-table');
+            topAssetTbody.innerHTML = '';
+
+            sortedByAsset.slice(0, 5).forEach(p => {
+                topAssetTbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-3 font-mono text-slate-500">${p.Barcode}</td>
-                        <td class="p-3 font-semibold text-slate-800">${p["Nama Barang"]}</td>
-                        <td class="p-3"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-xs">${p.Kategori}</span></td>
-                        <td class="p-3 font-bold text-slate-700">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
-                        <td class="p-3 text-center font-extrabold text-red-600 bg-red-50/50 rounded">${p.Stok} pcs</td>
+                        <td class="p-2.5 font-semibold text-slate-800">${p["Nama Barang"]}</td>
+                        <td class="p-2.5 text-center text-slate-600 font-medium">${p.Stok} pcs</td>
+                        <td class="p-2.5 text-right font-bold text-red-600">Rp ${p.totalVal.toLocaleString('id-ID')}</td>
                     </tr>
                 `;
             });
