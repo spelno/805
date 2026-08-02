@@ -6,6 +6,8 @@
     <title>Kasir (POS) - Ritel Express</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Pustaka Barcode Scanner Kamera (Html5-Qrcode) -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -15,10 +17,10 @@
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else if (activeUser.role !== 'Kasir' && activeUser.role !== 'Admin') {
             alert("Anda tidak memiliki hak akses sebagai Kasir!");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
     </script>
 </head>
@@ -47,15 +49,29 @@
 
     <!-- KONTEN UTAMA KASIR -->
     <main class="flex-1 flex overflow-hidden">
-        <!-- Kolom Kiri: Katalog & Pencarian -->
+        <!-- Kolom Kiri: Katalog, Pencarian & Scanner Kamera -->
         <div class="flex-1 flex flex-col p-5 bg-slate-50 overflow-hidden">
-            <div class="flex gap-3 mb-4">
+            <div class="flex gap-3 mb-4 items-center">
                 <div class="relative flex-1">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
-                    <input type="text" id="search-input" oninput="filterProducts()" placeholder="Cari barang (cth: Nasi Goreng, Aqua, Bimoli)..." 
+                    <input type="text" id="search-input" oninput="filterProducts()" placeholder="Cari barang atau tembak barcode fisik di sini..." 
                         class="w-full bg-white pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm text-sm font-medium">
                 </div>
+                <!-- Tombol Buka Kamera HP untuk Scan Barcode -->
+                <button onclick="startScanner()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-md transition text-sm shrink-0">
+                    <i class="fa-solid fa-camera text-base"></i> Scan Kamera HP
+                </button>
             </div>
+
+            <!-- Area Tampilan Kamera Scanner (Awalnya Tersembunyi) -->
+            <div id="reader-container" class="hidden mb-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Arahkan kamera ke Barcode</span>
+                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg">Tutup</button>
+                </div>
+                <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
+            </div>
+
             <div class="flex-1 overflow-y-auto pr-2">
                 <div id="product-grid" class="grid grid-cols-3 gap-4">
                     <p class="text-slate-400 col-span-3 text-center py-12">Memuat katalog barang dari Google Sheets...</p>
@@ -70,7 +86,7 @@
                 <span id="cart-count" class="bg-red-600 text-white text-xs px-2.5 py-1 rounded-full font-bold">0 Item</span>
             </div>
 
-            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-slate-100 max-h-[200px]">
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-slate-100 max-h-[180px]">
                 <p class="text-slate-400 text-center py-6 text-sm">Keranjang masih kosong.</p>
             </div>
 
@@ -120,6 +136,7 @@
         let products = [];
         let cart = [];
         let numpadValue = "0";
+        let html5QrCode = null;
 
         // Tampilkan nama kasir dari sesi aktif
         document.getElementById('cashier-name').innerText = activeUser.nama_lengkap;
@@ -127,7 +144,7 @@
 
         function logout() {
             localStorage.removeItem('ritel_active_user');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
 
         // Ambil produk dari Google Sheets saat halaman dimuat
@@ -174,13 +191,59 @@
 
         function filterProducts() {
             const q = document.getElementById('search-input').value.toLowerCase();
-            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(q) || String(p.Barcode).includes(q));
+            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(q) || String(p.Barcode).toLowerCase().includes(q));
             renderProducts(filtered);
         }
 
+        // --- FUNGSI SCANNER KAMERA HP ---
+        function startScanner() {
+            document.getElementById('reader-container').classList.remove('hidden');
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" }, // Kamera belakang HP
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 140 }
+                },
+                (decodedText, decodedResult) => {
+                    console.log(`Barcode terbaca: ${decodedText}`);
+                    addToCart(decodedText);
+                    stopScanner(); // Tutup kamera otomatis setelah produk masuk keranjang
+                },
+                (errorMessage) => {
+                    // Sedang memindai...
+                }
+            ).catch((err) => {
+                alert("Gagal membuka kamera. Pastikan Anda mengizinkan akses kamera pada browser.");
+                document.getElementById('reader-container').classList.add('hidden');
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('reader-container').classList.add('hidden');
+                }).catch((err) => {
+                    document.getElementById('reader-container').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('reader-container').classList.add('hidden');
+            }
+        }
+
+        // --- KELOLA KERANJANG ---
         function addToCart(id) {
             const p = products.find(x => String(x.Barcode) === String(id));
-            if (!p || p.Stok <= 0) return alert('Stok habis!');
+            if (!p) {
+                alert(`Barang dengan Barcode "${id}" tidak ditemukan di database!`);
+                return;
+            }
+            if (p.Stok <= 0) {
+                alert(`Stok ${p["Nama Barang"]} habis!`);
+                return;
+            }
+
             let item = cart.find(x => String(x.Barcode) === String(id));
             if (item) {
                 if (item.qty < p.Stok) item.qty++;
