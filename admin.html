@@ -15,10 +15,10 @@
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         } else if (activeUser.role !== 'Admin') {
             alert("Anda tidak memiliki hak akses sebagai Admin!");
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
         }
     </script>
 </head>
