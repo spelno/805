@@ -13,36 +13,25 @@
     </style>
     <script>
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
-        if (!activeUser) {
-            alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'index.html';
-        } else if (activeUser.role !== 'Inventory' && activeUser.role !== 'Admin') {
-            alert("Anda tidak memiliki hak akses sebagai Staf Inventory!");
-            window.location.href = 'index.html';
-        }
+        if (!activeUser || (activeUser.role !== 'Inventory' && activeUser.role !== 'Admin')) { window.location.href = 'index.html'; }
     </script>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
-
-    <!-- HEADER INVENTORY -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
-            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali ke Beranda">
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali">
                 <i class="fa-solid fa-house text-sm"></i>
             </button>
-            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
-                <i class="fa-solid fa-boxes-stacked"></i>
-            </div>
+            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-boxes-stacked"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
                 <p class="text-xs text-red-100 font-medium">Manajemen Gudang & Stok</p>
             </div>
         </div>
-        
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p id="staff-name" class="text-sm font-bold">Staf Gudang</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar Akun</button>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar</button>
             </div>
             <div id="staff-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">G</div>
         </div>
@@ -53,25 +42,23 @@
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h2 class="text-2xl font-extrabold text-slate-800">Kontrol Stok & Produk</h2>
-                    <p class="text-sm text-slate-500">Perubahan stok di sini langsung memperbarui database Google Sheets secara otomatis.</p>
+                    <p class="text-sm text-slate-500">Gunakan scanner fisik atau klik tombol kamera untuk mendata barang.</p>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="startScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-camera"></i> Scan Kamera (Cek / Tambah)
-                    </button>
-                </div>
+                <button onclick="startScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-camera"></i> Scan Kamera (Cek / Tambah)
+                </button>
             </div>
 
             <div id="reader-container" class="hidden mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Arahkan kamera ke Barcode</span>
+                    <span class="text-xs font-bold text-slate-700">Arahkan kamera ke Barcode</span>
                     <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg cursor-pointer">Tutup</button>
                 </div>
                 <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
             </div>
 
             <div class="mb-4">
-                <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Atau ketik nama / barcode barang di sini..." class="w-full bg-white px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+                <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Atau ketik nama / tembak barcode pakai alat inframerah di sini..." class="w-full bg-white px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -83,7 +70,7 @@
                             <th class="p-4">Kategori</th>
                             <th class="p-4">Harga Jual</th>
                             <th class="p-4 text-center">Sisa Stok</th>
-                            <th class="p-4 text-center">Aksi (Restock)</th>
+                            <th class="p-4 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-table-body" class="divide-y divide-slate-100">
@@ -92,10 +79,10 @@
                 </table>
             </div>
         </div>
-    </main>
+    </main>https://script.google.com/macros/s/AKfycbxLl5Ygch8s3Kf6LJ7WdFrCwqYZUkHM4_McZDz0RcWXGFbeUaWo_0_iJpKEoKZJFi54/exec
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx32HF0ruWN_JaiJk6KD6EqmHXmVFnRq80DQFENgN0AMnyGXdbJWcwBbPMrQe8AaV9n/exec";
+        const API_URL = "";
 
         let products = [];
         let html5QrCode = null;
@@ -109,11 +96,8 @@
         }
 
         function goHome() {
-            if (activeUser.role === 'Admin') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'index.html';
-            }
+            if (activeUser.role === 'Admin') window.location.href = 'admin.html';
+            else window.location.href = 'index.html';
         }
 
         async function loadInventoryData() {
@@ -122,11 +106,7 @@
                 products = await res.json();
                 renderInventory(products);
             } catch (err) {
-                products = [
-                    { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45, Ikon: "fa-bowl-rice" },
-                    { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12, Ikon: "fa-bottle-droplet" },
-                    { Barcode: 103, "Nama Barang": "Air Mineral Aqua 600ml", Kategori: "Minuman", "Harga Jual": 3500, Stok: 150, Ikon: "fa-bottle-water" }
-                ];
+                products = [];
                 renderInventory(products);
             }
         }
@@ -134,12 +114,10 @@
         function renderInventory(list) {
             const tbody = document.getElementById('inventory-table-body');
             tbody.innerHTML = '';
-            
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Barang tidak ditemukan.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Belum ada produk. Gunakan scanner untuk menambahkan barang baru.</td></tr>`;
                 return;
             }
-
             list.forEach(p => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -164,6 +142,17 @@
             renderInventory(filtered);
         }
 
+        // Tangkap scanner inframerah fisik secara otomatis dari input pencarian
+        document.getElementById('inventory-search').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                let scannedCode = this.value.trim();
+                if (scannedCode) {
+                    processScannedBarcode(scannedCode);
+                    this.value = '';
+                }
+            }
+        });
+
         function startScanner() {
             document.getElementById('reader-container').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
@@ -176,7 +165,7 @@
                 },
                 () => {}
             ).catch(() => {
-                alert("Gagal membuka kamera. Izinkan akses kamera browser.");
+                alert("Gagal membuka kamera.");
                 document.getElementById('reader-container').classList.add('hidden');
             });
         }
@@ -198,7 +187,7 @@
             if (p) {
                 restockItem(p.Barcode);
             } else {
-                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar.\n\nApakah Anda ingin menambahkan barang baru ini?`);
+                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar di database.\n\nApakah Anda ingin menambahkan barang baru ini?`);
                 if (addNew) {
                     promptNewProductDetails(barcode);
                 }
@@ -220,7 +209,7 @@
                 } catch(e) {}
 
                 renderInventory(products);
-                alert(`Stok ${p["Nama Barang"]} berhasil ditambah! Stok sekarang: ${p.Stok} pcs.`);
+                alert(`Stok berhasil ditambah! Stok sekarang: ${p.Stok} pcs.`);
             }
         }
 
@@ -257,7 +246,7 @@
             } catch(e) {}
 
             renderInventory(products);
-            alert(`Barang baru "${name}" berhasil disimpan ke database gudang!`);
+            alert(`Barang baru "${name}" berhasil disimpan ke Google Sheets!`);
         }
 
         loadInventoryData();
