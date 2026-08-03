@@ -12,36 +12,25 @@
     </style>
     <script>
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
-        if (!activeUser) {
-            alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'index.html';
-        } else if (activeUser.role !== 'Owner' && activeUser.role !== 'Admin') {
-            alert("Anda tidak memiliki hak akses sebagai Owner!");
-            window.location.href = 'index.html';
-        }
+        if (!activeUser || (activeUser.role !== 'Owner' && activeUser.role !== 'Admin')) { window.location.href = 'index.html'; }
     </script>
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
-
-    <!-- HEADER OWNER -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
-            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali ke Beranda">
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali">
                 <i class="fa-solid fa-house text-sm"></i>
             </button>
-            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
-                <i class="fa-solid fa-chart-pie"></i>
-            </div>
+            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-pie"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Pusat Analisis & Bisnis Owner</p>
+                <p class="text-xs text-red-100 font-medium">Pusat Analisis Owner</p>
             </div>
         </div>
-        
         <div class="flex items-center gap-4">
             <div class="text-right">
-                <p id="owner-name" class="text-sm font-bold">Pemilik Toko</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar Akun</button>
+                <p id="owner-name" class="text-sm font-bold">Pemilik</p>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar</button>
             </div>
             <div id="owner-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">O</div>
         </div>
@@ -49,11 +38,10 @@
 
     <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
         <div class="max-w-6xl mx-auto space-y-6">
-            
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ringkasan Eksekutif Bisnis</h2>
-                    <p class="text-sm text-slate-500 font-medium mt-0.5">Analisis performa aset, valuasi modal, dan potensi perputaran barang.</p>
+                    <p class="text-sm text-slate-500 font-medium mt-0.5">Valuasi modal dan perputaran aset secara real-time dari Google Sheets.</p>
                 </div>
                 <button onclick="loadOwnerData()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs shadow-sm border border-slate-200 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-rotate-right text-red-600"></i> Segarkan Data
@@ -64,31 +52,27 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Jenis Produk</p>
                     <h3 id="stat-total-item" class="text-2xl font-extrabold text-slate-800 mt-1.5">0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">SKU aktif di sistem</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Valuasi Aset</p>
                     <h3 id="stat-total-asset" class="text-2xl font-extrabold text-red-600 mt-1.5">Rp 0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Estimasi nilai seluruh stok</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Potensi Laba Kotor</p>
                     <h3 id="stat-potential-profit" class="text-2xl font-extrabold text-emerald-600 mt-1.5">Rp 0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Margin jika semua terjual</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status Cloud Sheets</p>
+                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status Cloud</p>
                     <h3 class="text-lg font-extrabold text-emerald-600 mt-2 flex items-center gap-1.5">
                         <i class="fa-solid fa-cloud-circle-check"></i> Sinkron
                     </h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Terhubung realtime</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Barang Perlu Restock Segera (&le; 15 pcs)
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Barang Kritis (&le; 15 pcs)
                     </h3>
                     <div class="flex-1 overflow-y-auto max-h-[280px]">
                         <table class="w-full text-left border-collapse text-xs">
@@ -96,11 +80,11 @@
                                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
                                     <th class="p-2.5">Nama Barang</th>
                                     <th class="p-2.5">Kategori</th>
-                                    <th class="p-2.5 text-center">Sisa Stok</th>
+                                    <th class="p-2.5 text-center">Stok</th>
                                 </tr>
                             </thead>
                             <tbody id="low-stock-table" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -108,7 +92,7 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-boxes-stacked text-red-600"></i> Aset Barang Bernilai Tinggi
+                        <i class="fa-solid fa-boxes-stacked text-red-600"></i> Aset Bernilai Tinggi
                     </h3>
                     <div class="flex-1 overflow-y-auto max-h-[280px]">
                         <table class="w-full text-left border-collapse text-xs">
@@ -116,22 +100,21 @@
                                 <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
                                     <th class="p-2.5">Nama Barang</th>
                                     <th class="p-2.5 text-center">Stok</th>
-                                    <th class="p-2.5 text-right">Total Valuasi</th>
+                                    <th class="p-2.5 text-right">Valuasi</th>
                                 </tr>
                             </thead>
                             <tbody id="top-asset-table" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat data...</td></tr>
+                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat...</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
         </div>
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx32HF0ruWN_JaiJk6KD6EqmHXmVFnRq80DQFENgN0AMnyGXdbJWcwBbPMrQe8AaV9n/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxLl5Ygch8s3Kf6LJ7WdFrCwqYZUkHM4_McZDz0RcWXGFbeUaWo_0_iJpKEoKZJFi54/exec";
 
         document.getElementById('owner-name').innerText = activeUser.nama_lengkap;
         document.getElementById('owner-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
@@ -142,11 +125,8 @@
         }
 
         function goHome() {
-            if (activeUser.role === 'Admin') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'index.html';
-            }
+            if (activeUser.role === 'Admin') window.location.href = 'admin.html';
+            else window.location.href = 'index.html';
         }
 
         async function loadOwnerData() {
@@ -155,30 +135,22 @@
                 let products = await res.json();
                 processDashboard(products);
             } catch (err) {
-                let dummyProducts = [
-                    { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45 },
-                    { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12 },
-                    { Barcode: 103, "Nama Barang": "Air Mineral Aqua 600ml", Kategori: "Minuman", "Harga Jual": 3500, Stok: 150 }
-                ];
-                processDashboard(dummyProducts);
+                processDashboard([]);
             }
         }
 
         function processDashboard(products) {
             document.getElementById('stat-total-item').innerText = products.length;
-            
             let totalAsset = products.reduce((sum, p) => sum + (Number(p["Harga Jual"]) * Number(p.Stok)), 0);
             document.getElementById('stat-total-asset').innerText = `Rp ${totalAsset.toLocaleString('id-ID')}`;
-            
             let estProfit = totalAsset * 0.20;
             document.getElementById('stat-potential-profit').innerText = `Rp ${estProfit.toLocaleString('id-ID')}`;
 
             const lowStockList = products.filter(p => Number(p.Stok) <= 15);
             const lowStockTbody = document.getElementById('low-stock-table');
             lowStockTbody.innerHTML = '';
-
             if (lowStockList.length === 0) {
-                lowStockTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-medium">Aman! Tidak ada stok kritis.</td></tr>`;
+                lowStockTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-medium">Stok aman.</td></tr>`;
             } else {
                 lowStockList.forEach(p => {
                     lowStockTbody.innerHTML += `
@@ -198,7 +170,6 @@
 
             const topAssetTbody = document.getElementById('top-asset-table');
             topAssetTbody.innerHTML = '';
-
             sortedByAsset.slice(0, 5).forEach(p => {
                 topAssetTbody.innerHTML += `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
