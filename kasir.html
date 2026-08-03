@@ -24,8 +24,13 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
 
+    <!-- HEADER KASIR -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
+            <!-- Tombol Navigasi Home / Back -->
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali ke Beranda">
+                <i class="fa-solid fa-house text-sm"></i>
+            </button>
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
                 <i class="fa-solid fa-cash-register"></i>
             </div>
@@ -44,6 +49,7 @@
         </div>
     </header>
 
+    <!-- KONTEN UTAMA KASIR -->
     <main class="flex-1 flex overflow-hidden">
         <div class="flex-1 flex flex-col p-5 bg-slate-50 overflow-hidden">
             <div class="flex gap-3 mb-4 items-center">
@@ -121,7 +127,7 @@
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbx32HF0ruWN_JaiJk6KD6EqmHXmVFnRq80DQFENgN0AMnyGXdbJWcwBbPMrQe8AaV9n/exec";
+        const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
         let products = [];
         let cart = [];
@@ -134,6 +140,15 @@
         function logout() {
             localStorage.removeItem('ritel_active_user');
             window.location.href = 'index.html';
+        }
+
+        // Fungsi Navigasi Home pintar (Jika Admin balik ke admin.html, jika Kasir kembali ke index.html)
+        function goHome() {
+            if (activeUser.role === 'Admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
         }
 
         async function loadProducts() {
