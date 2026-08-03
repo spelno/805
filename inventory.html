@@ -13,7 +13,6 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
     <script>
-        // --- PENGAMAN SESI (SECURITY GUARD) ---
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
@@ -26,7 +25,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
 
-    <!-- HEADER INVENTORY -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
@@ -41,13 +39,12 @@
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p id="staff-name" class="text-sm font-bold">Staf Gudang</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white">Keluar Akun</button>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar Akun</button>
             </div>
             <div id="staff-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">G</div>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA INVENTORY -->
     <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
         <div class="max-w-5xl mx-auto">
             <div class="flex justify-between items-center mb-6">
@@ -56,31 +53,25 @@
                     <p class="text-sm text-slate-500">Perubahan stok di sini langsung memperbarui database Google Sheets secara otomatis.</p>
                 </div>
                 <div class="flex gap-3">
-                    <!-- Tombol Buka Kamera Scanner -->
-                    <button onclick="startScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
-                        <i class="fa-solid fa-camera"></i> Scan Kamera
-                    </button>
-                    <button onclick="addNewProductPrompt()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Tambah Barang Baru
+                    <button onclick="startScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-camera"></i> Scan Kamera (Cek / Tambah)
                     </button>
                 </div>
             </div>
 
-            <!-- Kotak Kamera Scanner (Awalnya Tersembunyi) -->
+            <!-- Kotak Tampilan Kamera Scanner -->
             <div id="reader-container" class="hidden mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Scan Barcode untuk Cek/Restock</span>
-                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg">Tutup</button>
+                    <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Arahkan kamera ke Barcode</span>
+                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg cursor-pointer">Tutup</button>
                 </div>
                 <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
             </div>
 
-            <!-- Kolom Pencarian Teks -->
             <div class="mb-4">
                 <input type="text" id="inventory-search" oninput="filterInventory()" placeholder="Atau ketik nama / barcode barang di sini..." class="w-full bg-white px-4 py-3 rounded-xl border border-slate-200 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
-            <!-- Tabel Stok -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -102,13 +93,11 @@
     </main>
 
     <script>
-        // ⚠️ GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
         const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
         let products = [];
         let html5QrCode = null;
 
-        // Tampilkan nama staf dari sesi aktif
         document.getElementById('staff-name').innerText = activeUser.nama_lengkap;
         document.getElementById('staff-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
 
@@ -117,14 +106,12 @@
             window.location.href = 'index.html';
         }
 
-        // Ambil data produk dari Google Sheets
         async function loadInventoryData() {
             try {
                 let res = await fetch(`${API_URL}?action=getProducts`);
                 products = await res.json();
                 renderInventory(products);
             } catch (err) {
-                console.warn("Gagal ambil data cloud, pakai data contoh lokal.");
                 products = [
                     { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45, Ikon: "fa-bowl-rice" },
                     { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12, Ikon: "fa-bottle-droplet" },
@@ -154,7 +141,7 @@
                         <td class="p-4 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
                         <td class="p-4 text-center font-extrabold ${p.Stok > 10 ? 'text-slate-700' : 'text-red-600'}">${p.Stok} pcs</td>
                         <td class="p-4 text-center">
-                            <button onclick="restockItem('${p.Barcode}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">Tambah Stok</button>
+                            <button onclick="restockItem('${p.Barcode}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Tambah Stok</button>
                         </td>
                     </tr>
                 `;
@@ -167,27 +154,21 @@
             renderInventory(filtered);
         }
 
-        // --- FUNGSI SCANNER KAMERA DI INVENTORY ---
+        // --- SISTEM SCANNER PINTAR (CEK / TAMBAH BARANG) ---
         function startScanner() {
             document.getElementById('reader-container').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
             
             html5QrCode.start(
                 { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 140 }
-                },
-                (decodedText, decodedResult) => {
-                    console.log(`Barcode Gudang terbaca: ${decodedText}`);
+                { fps: 10, qrbox: { width: 250, height: 140 } },
+                (decodedText) => {
                     stopScanner();
-                    
-                    // Otomatis cari produk dan langsung arahkan untuk restock
-                    restockItem(decodedText);
+                    processScannedBarcode(decodedText);
                 },
-                (errorMessage) => {}
-            ).catch((err) => {
-                alert("Gagal membuka kamera. Periksa izin akses kamera browser Anda.");
+                () => {}
+            ).catch(() => {
+                alert("Gagal membuka kamera. Pastikan Anda mengizinkan akses kamera browser.");
                 document.getElementById('reader-container').classList.add('hidden');
             });
         }
@@ -196,7 +177,7 @@
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     document.getElementById('reader-container').classList.add('hidden');
-                }).catch((err) => {
+                }).catch(() => {
                     document.getElementById('reader-container').classList.add('hidden');
                 });
             } else {
@@ -204,17 +185,29 @@
             }
         }
 
+        // Cek apakah barcode sudah ada atau belum
+        function processScannedBarcode(barcode) {
+            const p = products.find(item => String(item.Barcode) === String(barcode));
+            
+            if (p) {
+                // KASUS 1: Barcode sudah ada -> Langsung tunjukkan stok & minta restock
+                restockItem(p.Barcode);
+            } else {
+                // KASUS 2: Barcode belum ada -> Tanya apakah ingin mendaftarkan barang baru
+                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar di sistem.\n\nApakah Anda ingin menambahkan barang baru ini?`);
+                if (addNew) {
+                    promptNewProductDetails(barcode);
+                }
+            }
+        }
+
         async function restockItem(barcode) {
             const p = products.find(item => String(item.Barcode) === String(barcode));
-            if (!p) {
-                alert(`Barang dengan Barcode "${barcode}" tidak ditemukan di database gudang!`);
-                return;
-            }
+            if (!p) return;
 
-            let addQty = prompt(`[ ${p["Nama Barang"]} ]\nStok saat ini: ${p.Stok}\nMasukkan jumlah penambahan stok:`, "10");
+            let addQty = prompt(`[ 📦 ${p["Nama Barang"]} ]\nBarcode: ${p.Barcode}\nStok Saat Ini: ${p.Stok} pcs\n\nMasukkan jumlah penambahan stok:`, "10");
             if (addQty && !isNaN(addQty)) {
                 p.Stok = Number(p.Stok) + Number(addQty);
-                
                 try {
                     await fetch(API_URL, {
                         method: "POST",
@@ -223,19 +216,19 @@
                 } catch(e) {}
 
                 renderInventory(products);
-                alert(`Stok ${p["Nama Barang"]} berhasil ditambah!`);
+                alert(`Stok ${p["Nama Barang"]} berhasil ditambah! Stok sekarang: ${p.Stok} pcs.`);
             }
         }
 
-        async function addNewProductPrompt() {
-            let name = prompt("Masukkan Nama Barang Baru:");
-            if(!name) return;
+        async function promptNewProductDetails(barcodeId) {
+            let name = prompt(`Mendaftarkan Barcode: [ ${barcodeId} ]\n\nMasukkan Nama Barang Baru:`);
+            if (!name) return;
+            
             let price = prompt("Masukkan Harga Jual (Contoh: 10000):", "10000");
             let stock = prompt("Masukkan Stok Awal:", "50");
-            let newId = String(Date.now()).slice(-4);
 
             let newProd = {
-                id: newId,
+                id: barcodeId,
                 name: name,
                 category: "Umum",
                 price: Number(price) || 5000,
@@ -260,7 +253,7 @@
             } catch(e) {}
 
             renderInventory(products);
-            alert(`Barang "${name}" berhasil ditambahkan ke database!`);
+            alert(`Barang baru "${name}" berhasil disimpan ke database gudang!`);
         }
 
         loadInventoryData();
