@@ -6,14 +6,12 @@
     <title>Kasir (POS) - Ritel Express</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pustaka Barcode Scanner Kamera (Html5-Qrcode) -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
     <script>
-        // --- PENGAMAN SESI (SECURITY GUARD) ---
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
@@ -26,7 +24,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
 
-    <!-- HEADER KASIR -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
@@ -41,15 +38,13 @@
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p id="cashier-name" class="text-sm font-bold">Kasir</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white">Keluar Akun</button>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar Akun</button>
             </div>
             <div id="cashier-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">K</div>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA KASIR -->
     <main class="flex-1 flex overflow-hidden">
-        <!-- Kolom Kiri: Katalog, Pencarian & Scanner Kamera -->
         <div class="flex-1 flex flex-col p-5 bg-slate-50 overflow-hidden">
             <div class="flex gap-3 mb-4 items-center">
                 <div class="relative flex-1">
@@ -57,17 +52,15 @@
                     <input type="text" id="search-input" oninput="filterProducts()" placeholder="Cari barang atau tembak barcode fisik di sini..." 
                         class="w-full bg-white pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm text-sm font-medium">
                 </div>
-                <!-- Tombol Buka Kamera HP untuk Scan Barcode -->
-                <button onclick="startScanner()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-md transition text-sm shrink-0">
+                <button onclick="startScanner()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-md transition text-sm shrink-0 cursor-pointer">
                     <i class="fa-solid fa-camera text-base"></i> Scan Kamera HP
                 </button>
             </div>
 
-            <!-- Area Tampilan Kamera Scanner (Awalnya Tersembunyi) -->
             <div id="reader-container" class="hidden mb-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Arahkan kamera ke Barcode</span>
-                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg">Tutup</button>
+                    <button onclick="stopScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg cursor-pointer">Tutup</button>
                 </div>
                 <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
             </div>
@@ -79,7 +72,6 @@
             </div>
         </div>
 
-        <!-- Kolom Kanan: Keranjang & Kalkulator Pembayaran -->
         <div class="w-[440px] bg-white border-l border-slate-200 flex flex-col shadow-lg z-10">
             <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-red-50/50">
                 <h2 class="font-bold text-red-600 flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> Keranjang Belanja</h2>
@@ -90,7 +82,6 @@
                 <p class="text-slate-400 text-center py-6 text-sm">Keranjang masih kosong.</p>
             </div>
 
-            <!-- Kalkulator & Pembayaran -->
             <div class="p-3 bg-slate-50 border-t border-slate-200">
                 <div class="bg-white p-3 rounded-xl border border-slate-200 mb-2 space-y-1 text-sm">
                     <div class="flex justify-between text-slate-500"><span>Total Belanja:</span><span id="display-total" class="font-bold text-slate-800">Rp 0</span></div>
@@ -103,26 +94,26 @@
                     <span id="numpad-display" class="font-mono font-bold text-red-600 text-sm">0</span>
                 </div>
                 <div class="grid grid-cols-4 gap-1.5">
-                    <button onclick="pressNumpad('7')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">7</button>
-                    <button onclick="pressNumpad('8')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">8</button>
-                    <button onclick="pressNumpad('9')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">9</button>
-                    <button onclick="pressNumpad('C')" class="bg-red-100 text-red-600 py-2 rounded-lg font-bold text-sm">C</button>
-                    <button onclick="pressNumpad('4')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">4</button>
-                    <button onclick="pressNumpad('5')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">5</button>
-                    <button onclick="pressNumpad('6')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">6</button>
-                    <button onclick="pressNumpad('DEL')" class="bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm"><i class="fa-solid fa-delete-left"></i></button>
-                    <button onclick="pressNumpad('1')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">1</button>
-                    <button onclick="pressNumpad('2')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">2</button>
-                    <button onclick="pressNumpad('3')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">3</button>
-                    <button onclick="pressNumpad('00')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">00</button>
-                    <button onclick="pressNumpad('0')" class="col-span-2 bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200">0</button>
-                    <button onclick="pressNumpad('50000')" class="bg-red-50 text-red-600 py-2 rounded-lg font-bold text-xs border border-red-200">50rb</button>
-                    <button onclick="pressNumpad('100000')" class="bg-red-50 text-red-600 py-2 rounded-lg font-bold text-xs border border-red-200">100rb</button>
+                    <button onclick="pressNumpad('7')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">7</button>
+                    <button onclick="pressNumpad('8')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">8</button>
+                    <button onclick="pressNumpad('9')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">9</button>
+                    <button onclick="pressNumpad('C')" class="bg-red-100 text-red-600 py-2 rounded-lg font-bold text-sm cursor-pointer">C</button>
+                    <button onclick="pressNumpad('4')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">4</button>
+                    <button onclick="pressNumpad('5')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">5</button>
+                    <button onclick="pressNumpad('6')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">6</button>
+                    <button onclick="pressNumpad('DEL')" class="bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm cursor-pointer"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="pressNumpad('1')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">1</button>
+                    <button onclick="pressNumpad('2')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">2</button>
+                    <button onclick="pressNumpad('3')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">3</button>
+                    <button onclick="pressNumpad('00')" class="bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">00</button>
+                    <button onclick="pressNumpad('0')" class="col-span-2 bg-white py-2 rounded-lg font-bold text-sm shadow-sm border border-slate-200 cursor-pointer">0</button>
+                    <button onclick="pressNumpad('50000')" class="bg-red-50 text-red-600 py-2 rounded-lg font-bold text-xs border border-red-200 cursor-pointer">50rb</button>
+                    <button onclick="pressNumpad('100000')" class="bg-red-50 text-red-600 py-2 rounded-lg font-bold text-xs border border-red-200 cursor-pointer">100rb</button>
                 </div>
             </div>
 
             <div class="p-4 bg-white border-t border-slate-200">
-                <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-red-200 transition text-base flex justify-center items-center gap-2">
+                <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-wallet"></i> Selesaikan Transaksi
                 </button>
             </div>
@@ -130,15 +121,13 @@
     </main>
 
     <script>
-        // ⚠️ GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-        const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
+        const API_URL = "https://script.google.com/macros/s/AKfycbx32HF0ruWN_JaiJk6KD6EqmHXmVFnRq80DQFENgN0AMnyGXdbJWcwBbPMrQe8AaV9n/exec";
 
         let products = [];
         let cart = [];
         let numpadValue = "0";
         let html5QrCode = null;
 
-        // Tampilkan nama kasir dari sesi aktif
         document.getElementById('cashier-name').innerText = activeUser.nama_lengkap;
         document.getElementById('cashier-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
 
@@ -147,14 +136,12 @@
             window.location.href = 'index.html';
         }
 
-        // Ambil produk dari Google Sheets saat halaman dimuat
         async function loadProducts() {
             try {
                 let res = await fetch(`${API_URL}?action=getProducts`);
                 products = await res.json();
                 renderProducts(products);
             } catch (err) {
-                console.warn("Gagal ambil data cloud, pakai data contoh lokal.");
                 products = [
                     { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45, Ikon: "fa-bowl-rice" },
                     { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12, Ikon: "fa-bottle-droplet" },
@@ -195,27 +182,19 @@
             renderProducts(filtered);
         }
 
-        // --- FUNGSI SCANNER KAMERA HP ---
         function startScanner() {
             document.getElementById('reader-container').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
-            
             html5QrCode.start(
-                { facingMode: "environment" }, // Kamera belakang HP
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 140 }
-                },
-                (decodedText, decodedResult) => {
-                    console.log(`Barcode terbaca: ${decodedText}`);
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 140 } },
+                (decodedText) => {
                     addToCart(decodedText);
-                    stopScanner(); // Tutup kamera otomatis setelah produk masuk keranjang
+                    stopScanner();
                 },
-                (errorMessage) => {
-                    // Sedang memindai...
-                }
-            ).catch((err) => {
-                alert("Gagal membuka kamera. Pastikan Anda mengizinkan akses kamera pada browser.");
+                () => {}
+            ).catch(() => {
+                alert("Gagal membuka kamera. Izinkan akses kamera di browser.");
                 document.getElementById('reader-container').classList.add('hidden');
             });
         }
@@ -224,7 +203,7 @@
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     document.getElementById('reader-container').classList.add('hidden');
-                }).catch((err) => {
+                }).catch(() => {
                     document.getElementById('reader-container').classList.add('hidden');
                 });
             } else {
@@ -232,11 +211,10 @@
             }
         }
 
-        // --- KELOLA KERANJANG ---
         function addToCart(id) {
             const p = products.find(x => String(x.Barcode) === String(id));
             if (!p) {
-                alert(`Barang dengan Barcode "${id}" tidak ditemukan di database!`);
+                alert(`Barang dengan Barcode "${id}" tidak ditemukan!`);
                 return;
             }
             if (p.Stok <= 0) {
@@ -282,9 +260,9 @@
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-red-600 text-xs">Rp ${(Number(item["Harga Jual"]) * item.qty).toLocaleString('id-ID')}</span>
                             <div class="flex items-center border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                                <button onclick="changeQty(${idx}, -1)" class="px-2 py-0.5 hover:bg-slate-200 text-xs font-bold">-</button>
+                                <button onclick="changeQty(${idx}, -1)" class="px-2 py-0.5 hover:bg-slate-200 text-xs font-bold cursor-pointer">-</button>
                                 <span class="px-2 text-xs font-bold">${item.qty}</span>
-                                <button onclick="changeQty(${idx}, 1)" class="px-2 py-0.5 hover:bg-slate-200 text-xs font-bold">+</button>
+                                <button onclick="changeQty(${idx}, 1)" class="px-2 py-0.5 hover:bg-slate-200 text-xs font-bold cursor-pointer">+</button>
                             </div>
                         </div>
                     </div>
@@ -332,6 +310,8 @@
             let cash = parseInt(numpadValue) || 0;
             if (cash < subtotal) return alert('Uang pembayaran kurang!');
 
+            let change = cash - subtotal;
+
             try {
                 await fetch(API_URL, {
                     method: "POST",
@@ -339,7 +319,18 @@
                 });
             } catch (e) {}
 
-            alert(`Transaksi Berhasil!\nKembalian: Rp ${(cash - subtotal).toLocaleString('id-ID')}`);
+            let triggerDrawer = confirm(
+                `TRANSAKSI BERHASIL!\n\n` +
+                `Total Belanja: Rp ${subtotal.toLocaleString('id-ID')}\n` +
+                `Uang Dibayar: Rp ${cash.toLocaleString('id-ID')}\n` +
+                `Kembalian: Rp ${change.toLocaleString('id-ID')}\n\n` +
+                `[ 🗄️ CASH DRAWER ] Klik OK untuk mencetak struk dan membuka laci uang.`
+            );
+
+            if (triggerDrawer) {
+                window.print();
+            }
+
             cart = [];
             numpadValue = "0";
             document.getElementById('numpad-display').innerText = "0";
