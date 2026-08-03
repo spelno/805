@@ -6,7 +6,6 @@
     <title>Stok Inventory - Ritel Express</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Pustaka Barcode Scanner Kamera (Html5-Qrcode) -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -25,8 +24,12 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
 
+    <!-- HEADER INVENTORY -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali ke Beranda">
+                <i class="fa-solid fa-house text-sm"></i>
+            </button>
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
                 <i class="fa-solid fa-boxes-stacked"></i>
             </div>
@@ -59,7 +62,6 @@
                 </div>
             </div>
 
-            <!-- Kotak Tampilan Kamera Scanner -->
             <div id="reader-container" class="hidden mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-barcode mr-1 text-red-600"></i> Arahkan kamera ke Barcode</span>
@@ -104,6 +106,14 @@
         function logout() {
             localStorage.removeItem('ritel_active_user');
             window.location.href = 'index.html';
+        }
+
+        function goHome() {
+            if (activeUser.role === 'Admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
         }
 
         async function loadInventoryData() {
@@ -154,11 +164,9 @@
             renderInventory(filtered);
         }
 
-        // --- SISTEM SCANNER PINTAR (CEK / TAMBAH BARANG) ---
         function startScanner() {
             document.getElementById('reader-container').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
-            
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 250, height: 140 } },
@@ -168,7 +176,7 @@
                 },
                 () => {}
             ).catch(() => {
-                alert("Gagal membuka kamera. Pastikan Anda mengizinkan akses kamera browser.");
+                alert("Gagal membuka kamera. Izinkan akses kamera browser.");
                 document.getElementById('reader-container').classList.add('hidden');
             });
         }
@@ -185,16 +193,12 @@
             }
         }
 
-        // Cek apakah barcode sudah ada atau belum
         function processScannedBarcode(barcode) {
             const p = products.find(item => String(item.Barcode) === String(barcode));
-            
             if (p) {
-                // KASUS 1: Barcode sudah ada -> Langsung tunjukkan stok & minta restock
                 restockItem(p.Barcode);
             } else {
-                // KASUS 2: Barcode belum ada -> Tanya apakah ingin mendaftarkan barang baru
-                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar di sistem.\n\nApakah Anda ingin menambahkan barang baru ini?`);
+                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar.\n\nApakah Anda ingin menambahkan barang baru ini?`);
                 if (addNew) {
                     promptNewProductDetails(barcode);
                 }
