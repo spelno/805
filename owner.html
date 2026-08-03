@@ -11,7 +11,6 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
     <script>
-        // --- PENGAMAN SESI (SECURITY GUARD) ---
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             alert("Akses ditolak! Silakan login terlebih dahulu.");
@@ -27,6 +26,9 @@
     <!-- HEADER OWNER -->
     <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
         <div class="flex items-center gap-3">
+            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali ke Beranda">
+                <i class="fa-solid fa-house text-sm"></i>
+            </button>
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow">
                 <i class="fa-solid fa-chart-pie"></i>
             </div>
@@ -39,13 +41,12 @@
         <div class="flex items-center gap-4">
             <div class="text-right">
                 <p id="owner-name" class="text-sm font-bold">Pemilik Toko</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white">Keluar Akun</button>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar Akun</button>
             </div>
             <div id="owner-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">O</div>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA OWNER -->
     <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
         <div class="max-w-6xl mx-auto space-y-6">
             
@@ -54,12 +55,11 @@
                     <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ringkasan Eksekutif Bisnis</h2>
                     <p class="text-sm text-slate-500 font-medium mt-0.5">Analisis performa aset, valuasi modal, dan potensi perputaran barang.</p>
                 </div>
-                <button onclick="loadOwnerData()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs shadow-sm border border-slate-200 transition flex items-center gap-2">
+                <button onclick="loadOwnerData()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs shadow-sm border border-slate-200 transition flex items-center gap-2 cursor-pointer">
                     <i class="fa-solid fa-rotate-right text-red-600"></i> Segarkan Data
                 </button>
             </div>
 
-            <!-- KARTU METRIK UTAMA -->
             <div class="grid grid-cols-4 gap-5">
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Jenis Produk</p>
@@ -74,7 +74,7 @@
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Potensi Laba Kotor</p>
                     <h3 id="stat-potential-profit" class="text-2xl font-extrabold text-emerald-600 mt-1.5">Rp 0</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Margin jika semua terjual*</p>
+                    <p class="text-xs text-slate-500 font-medium mt-1">Margin jika semua terjual</p>
                 </div>
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status Cloud Sheets</p>
@@ -85,10 +85,7 @@
                 </div>
             </div>
 
-            <!-- BAGIAN TABEL ANALISIS -->
             <div class="grid grid-cols-2 gap-6">
-                
-                <!-- 1. Peringatan Stok Menipis (Penting untuk restock modal) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Barang Perlu Restock Segera (&le; 15 pcs)
@@ -109,7 +106,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Valuasi Berdasarkan Kategori / Daftar Aset Terbesar -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
                     <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-boxes-stacked text-red-600"></i> Aset Barang Bernilai Tinggi
@@ -129,14 +125,12 @@
                         </table>
                     </div>
                 </div>
-
             </div>
 
         </div>
     </main>
 
     <script>
-        // ⚠️ GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
         const API_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
         document.getElementById('owner-name').innerText = activeUser.nama_lengkap;
@@ -147,13 +141,20 @@
             window.location.href = 'index.html';
         }
 
+        function goHome() {
+            if (activeUser.role === 'Admin') {
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
         async function loadOwnerData() {
             try {
                 let res = await fetch(`${API_URL}?action=getProducts`);
                 let products = await res.json();
                 processDashboard(products);
             } catch (err) {
-                console.warn("Gagal ambil data cloud, pakai data contoh lokal.");
                 let dummyProducts = [
                     { Barcode: 101, "Nama Barang": "Nasi Goreng Spesial Instan", Kategori: "Makanan", "Harga Jual": 15000, Stok: 45 },
                     { Barcode: 102, "Nama Barang": "Minyak Goreng Bimoli 2L", Kategori: "Sembako", "Harga Jual": 38000, Stok: 12 },
@@ -166,15 +167,12 @@
         function processDashboard(products) {
             document.getElementById('stat-total-item').innerText = products.length;
             
-            // Hitung total valuasi aset (Harga Jual x Stok)
             let totalAsset = products.reduce((sum, p) => sum + (Number(p["Harga Jual"]) * Number(p.Stok)), 0);
             document.getElementById('stat-total-asset').innerText = `Rp ${totalAsset.toLocaleString('id-ID')}`;
             
-            // Estimasi margin/potensi laba kasar (diasumsikan estimasi 20% dari total valuasi atau kasarnya)
             let estProfit = totalAsset * 0.20;
             document.getElementById('stat-potential-profit').innerText = `Rp ${estProfit.toLocaleString('id-ID')}`;
 
-            // 1. Render Tabel Stok Menipis
             const lowStockList = products.filter(p => Number(p.Stok) <= 15);
             const lowStockTbody = document.getElementById('low-stock-table');
             lowStockTbody.innerHTML = '';
@@ -193,7 +191,6 @@
                 });
             }
 
-            // 2. Render Aset Terbesar (Urutkan berdasarkan total nilai terbesar)
             let sortedByAsset = [...products].map(p => ({
                 ...p,
                 totalVal: Number(p["Harga Jual"]) * Number(p.Stok)
