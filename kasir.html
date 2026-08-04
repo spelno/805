@@ -379,11 +379,8 @@
         function executeRawBTIntentPrint(items, subtotal, cash, change) {
             let trxId = "805-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
-            
-            // Format Tanggal dan Jam Real-Time
             let dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
             let timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
             let cashierName = activeUser.nama_lengkap;
 
             let textData = "        805 MART\n";
