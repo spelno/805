@@ -9,9 +9,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @media print {
+            body * { visibility: hidden; }
+            #print-receipt-area, #print-receipt-area * { visibility: visible; }
+            #print-receipt-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
     <script>
-        // Validasi Sesi Aman
         let activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             activeUser = { nama_lengkap: "Kasir Utama", role: "Kasir" };
@@ -30,7 +34,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (RawBT Protocol Ready)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Stable Print Ready)</p>
             </div>
         </div>
 
@@ -70,15 +74,20 @@
                 </div>
             </div>
 
-            <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-4">
+            <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-3">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <div class="flex justify-between text-slate-500 text-sm"><span>Total Belanja:</span><span id="display-total" class="font-extrabold text-slate-800 text-base">Rp 0</span></div>
                     <div class="flex justify-between text-slate-500 text-sm"><span>Uang Dibayar:</span><span id="display-cash" class="font-bold text-red-600 text-base">Rp 0</span></div>
                     <div class="flex justify-between border-t border-slate-100 pt-2 text-lg font-extrabold"><span class="text-slate-700">Kembalian:</span><span id="display-change" class="text-emerald-600">Rp 0</span></div>
                 </div>
 
-                <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-lg flex justify-center items-center gap-3 cursor-pointer">
-                    <i class="fa-solid fa-wallet text-xl"></i> Selesaikan Transaksi & Cetak Otomatis
+                <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-wallet text-lg"></i> Selesaikan Transaksi
+                </button>
+
+                <!-- Tombol Cetak Manual Cadangan (Muncul setelah transaksi atau bisa diklik kapan saja) -->
+                <button onclick="triggerManualPrint()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs transition flex justify-center items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-print"></i> Cetak Ulang Struk Terakhir / Tes Printer
                 </button>
             </div>
         </div>
@@ -86,7 +95,6 @@
         <!-- KOLOM KANAN: SCANNER, KONTROL KEYBOARD, KALKULATOR, & KATALOG -->
         <div class="w-[38%] flex flex-col gap-4 overflow-hidden">
             
-            <!-- Target Scanner Barcode dengan Tombol Kontrol Keyboard Virtual -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
                 <div class="flex justify-between items-center mb-1">
                     <label class="block text-xs font-bold text-slate-500 uppercase">Target Scanner Barcode</label>
@@ -96,14 +104,11 @@
                 </div>
                 <div class="relative">
                     <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
-                    <!-- Input diset readOnly agar keyboard melayang Android TIDAK muncul otomatis -->
                     <input type="text" id="search-input" readonly placeholder="Tembak Barcode di sini..." 
                         class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner cursor-pointer">
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1 ml-1">*Klik tombol "Keyboard" di atas jika ingin mengetik manual.</p>
             </div>
 
-            <!-- Keypad Kalkulator Pembayaran -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1 mb-2 font-bold">
                     <span>Nominal Pembayaran</span>
@@ -128,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- Katalog Cepat -->
             <div class="flex-1 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
                 <h3 class="font-bold text-slate-700 text-xs uppercase mb-2">Katalog Cepat Produk</h3>
                 <div id="product-grid" class="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -138,12 +142,15 @@
         </div>
     </main>
 
+    <!-- Area Struk Tersembunyi -->
+    <div id="print-receipt-area" style="display: none;"></div>
+
     <script>
-        // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         let products = [];
         let cart = [];
+        let lastTransactionData = null;
         let numpadValue = "0";
 
         document.getElementById('cashier-name').innerText = activeUser.nama_lengkap;
@@ -163,7 +170,6 @@
             else window.location.href = 'index.html';
         }
 
-        // Tombol Kontrol Keyboard Virtual (Agar tidak muncul otomatis)
         function toggleVirtualKeyboard() {
             const btnText = document.getElementById('kbd-status-text');
             const btnEl = document.getElementById('kbd-toggle-btn');
@@ -330,7 +336,6 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
-        // Proses Checkout Sempurna, Aman, & Langsung Cetak via Protokol RawBT
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
@@ -348,74 +353,93 @@
 
             let change = cash - subtotal;
 
+            // Simpan data untuk cetak manual
+            lastTransactionData = { cart: [...cart], subtotal, cash, change };
+
             try {
                 await fetch(API_URL, {
                     method: "POST",
                     body: JSON.stringify({ action: "checkout", items: cart.map(i => ({ id: i.Barcode, qty: i.qty })) })
                 });
             } catch (e) {
-                console.warn("Sinkronisasi cloud tertunda, transaksi diproses lokal.");
+                console.warn("Sinkronisasi cloud tertunda.");
             }
 
-            // EKSEKUSI CETAK THERMAL LANGSUNG KE RAWBT
-            executeDirectThermalPrint(subtotal, cash, change);
+            // Eksekusi cetak otomatis
+            prepareReceiptHTML(lastTransactionData.cart, subtotal, cash, change);
+            window.print();
 
-            // Reset instan tanpa error
+            // Reset instan
             cart = [];
             numpadValue = "0";
             document.getElementById('numpad-display').innerText = "0";
             loadProducts();
             renderCart();
             
-            setTimeout(() => {
-                searchInput.focus();
-            }, 300);
+            setTimeout(() => { searchInput.focus(); }, 300);
         }
 
-        function executeDirectThermalPrint(subtotal, cash, change) {
+        function triggerManualPrint() {
+            if (!lastTransactionData && cart.length === 0) {
+                return alert('Belum ada data transaksi atau keranjang untuk dicetak!');
+            }
+            let dataToPrint = lastTransactionData || {
+                cart: [...cart],
+                subtotal: cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0),
+                cash: parseInt(numpadValue) || 0,
+                change: (parseInt(numpadValue) || 0) - cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0)
+            };
+
+            prepareReceiptHTML(dataToPrint.cart, dataToPrint.subtotal, dataToPrint.cash, dataToPrint.change);
+            window.print();
+        }
+
+        function prepareReceiptHTML(items, subtotal, cash, change) {
             let trxId = "RX-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             let cashierName = activeUser.nama_lengkap;
 
-            let textData = "      RITEL EXPRESS\n";
-            textData += "  Jl. Raya Perbelanjaan Utama\n";
-            textData += "      Telp: 081234567890\n";
-            textData += "--------------------------------\n";
-            textData += `No. Nota : ${trxId}\n`;
-            textData += `Waktu   : ${dateStr}\n`;
-            textData += `Kasir   : ${cashierName}\n`;
-            textData += "--------------------------------\n";
+            let printContainer = document.getElementById('print-receipt-area');
+            let htmlContent = `
+                <div style="width: 270px; font-family: monospace; font-size: 11px; padding: 5px; color: #000; line-height: 1.2;">
+                    <div style="text-align: center; font-weight: bold; font-size: 13px;">RITEL EXPRESS</div>
+                    <div style="text-align: center;">Jl. Raya Perbelanjaan Utama</div>
+                    <div style="text-align: center;">Telp: 081234567890</div>
+                    <div>--------------------------------</div>
+                    <div>No. Nota : ${trxId}</div>
+                    <div>Waktu   : ${dateStr}</div>
+                    <div>Kasir   : ${cashierName}</div>
+                    <div>--------------------------------</div>
+            `;
 
-            cart.forEach(i => {
+            items.forEach(i => {
                 let hargaAsli = Number(i["Harga Jual"]);
                 let diskon = i.diskon || 0;
                 let hargaReal = hargaAsli - diskon;
                 let totalItem = hargaReal * i.qty;
 
-                textData += `${i["Nama Barang"]}\n`;
-                textData += `${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}\n`;
+                htmlContent += `
+                    <div style="font-weight: bold;">${i["Nama Barang"]}</div>
+                    <div>${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}</div>
+                `;
                 if (diskon > 0) {
-                    textData += `(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})\n`;
+                    htmlContent += `<div>(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})</div>`;
                 }
             });
 
-            textData += "--------------------------------\n";
-            textData += `Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}\n`;
-            textData += `Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}\n`;
-            textData += `KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}\n`;
-            textData += "--------------------------------\n";
-            textData += "       TERIMA KASIH\n";
-            textData += "   Silakan Datang Kembali\n";
-            textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
-
-            // Menggunakan protokol langsung rawbt: untuk membangunkan aplikasi RawBT
-            try {
-                let rawbtUrl = "rawbt:data:text/plain;charset=utf-8," + encodeURIComponent(textData);
-                window.location.href = rawbtUrl;
-            } catch(err) {
-                console.log("Cetak langsung dialihkan:", err);
-            }
+            htmlContent += `
+                    <div>--------------------------------</div>
+                    <div>Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}</div>
+                    <div>Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}</div>
+                    <div>KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}</div>
+                    <div>--------------------------------</div>
+                    <div style="text-align: center;">TERIMA KASIH</div>
+                    <div style="text-align: center;">Silakan Datang Kembali</div>
+                    <div style="text-align: center; font-size: 9px;">Barang yg dibeli tdk dapat ditukar</div>
+                </div>
+            `;
+            printContainer.innerHTML = htmlContent;
         }
 
         let customerWindow = null;
