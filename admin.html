@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - 805 Mart Manado</title>
+    <title>Panel Owner - 805 Mart Manado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,44 +13,40 @@
 </head>
 <body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
     
-    <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center z-10 shrink-0">
+    <header class="bg-red-700 text-white shadow-md px-6 py-4 flex justify-between items-center z-10 shrink-0">
         <div class="flex items-center gap-3">
-            <div class="bg-red-600 text-white p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div class="bg-white text-red-700 p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-line"></i></div>
             <div>
-                <h1 class="font-bold text-lg tracking-wide">PANEL ADMIN 805 MART</h1>
-                <p class="text-xs text-slate-400">Manajemen Inventaris & Stok Produk</p>
+                <h1 class="font-bold text-lg tracking-wide">DASHBOARD OWNER 805 MART</h1>
+                <p class="text-xs text-red-100">Laporan Bisnis & Monitoring Toko</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <a href="kasir.html" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                <i class="fa-solid fa-cash-register"></i> Buka Kasir POS
+            <a href="kasir.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                <i class="fa-solid fa-cash-register"></i> Kasir POS
             </a>
-            <button onclick="logout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
+            <button onclick="logout()" class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
         </div>
     </header>
 
     <main class="flex-1 p-6 overflow-y-auto">
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-5xl mx-auto space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="font-extrabold text-lg text-slate-800">Daftar Inventaris Produk</h2>
-                <button onclick="loadAdminProducts()" class="bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition">
-                    <i class="fa-solid fa-rotate"></i> Muat Ulang
-                </button>
+        <div class="max-w-5xl mx-auto space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Status Sistem Cloud</span>
+                    <h3 class="text-xl font-extrabold text-emerald-600 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i> Terhubung ke Google Sheets
+                    </h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Lokasi Usaha</span>
+                    <h3 class="text-base font-extrabold text-slate-700">Ruko Amethys A568 Kawanua Emerald City</h3>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
-                        <tr>
-                            <th class="p-3">Barcode</th>
-                            <th class="p-3">Nama Barang</th>
-                            <th class="p-3">Harga Jual</th>
-                            <th class="p-3">Stok Tersedia</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-product-list" class="divide-y divide-slate-100">
-                        <tr><td colspan="4" class="text-center py-6 text-slate-400">Menghubungkan ke Google Sheets...</td></tr>
-                    </tbody>
-                </table>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="font-extrabold text-lg text-slate-800">Ringkasan Operasional 805 Mart</h2>
+                <p class="text-sm text-slate-500">Semua transaksi penjualan kasir otomatis tercatat langsung ke Google Sheets secara real-time dan transparan.</p>
             </div>
         </div>
     </main>
@@ -58,36 +54,9 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
-        window.onload = () => { loadAdminProducts(); };
-
         function logout() {
             localStorage.removeItem('ritel_active_user');
             window.location.href = 'index.html';
-        }
-
-        async function loadAdminProducts() {
-            try {
-                let res = await fetch(`${API_URL}?action=getProducts`);
-                let data = await res.json();
-                const tbody = document.getElementById('admin-product-list');
-                tbody.innerHTML = '';
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
-                    return;
-                }
-                data.forEach(p => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-3 font-mono font-bold text-slate-600">${p.Barcode}</td>
-                            <td class="p-3 font-bold text-slate-800">${p["Nama Barang"]}</td>
-                            <td class="p-3 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
-                            <td class="p-3 font-bold text-slate-700">${p.Stok} Unit</td>
-                        </tr>
-                    `;
-                });
-            } catch (e) {
-                document.getElementById('admin-product-list').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Gagal memuat data dari Google Sheets. Periksa URL GAS.</td></tr>`;
-            }
         }
     </script>
 </body>
