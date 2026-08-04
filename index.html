@@ -15,21 +15,19 @@
     
     <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl border border-slate-100 space-y-6">
         
-        <!-- BAGIAN LOGO: Besar, transparan tanpa background, estetik -->
         <div class="text-center space-y-3">
             <div class="flex justify-center items-center mb-1">
                 <img src="Logo.png" alt="Logo 805 Mart" class="w-48 h-auto object-contain drop-shadow-md" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=805+Mart';">
             </div>
-            <p class="text-xs text-slate-400 font-medium">Silakan masuk menggunakan akun kasir Anda</p>
+            <p class="text-xs text-slate-400 font-medium">Silakan masuk menggunakan akun Anda</p>
         </div>
 
-        <!-- FORM LOGIN -->
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / ID Kasir</label>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / ID Pengguna</label>
                 <div class="relative">
                     <i class="fa-solid fa-user absolute left-4 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="username" required placeholder="Masukkan username..." 
+                    <input type="text" id="username" required placeholder="Contoh: kasir, admin, owner" 
                         class="w-full bg-slate-50 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold">
                 </div>
             </div>
@@ -44,7 +42,7 @@
             </div>
 
             <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer mt-2">
-                <i class="fa-solid fa-right-to-bracket"></i> Masuk Terminal Kasir
+                <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem POS
             </button>
         </form>
 
@@ -54,33 +52,34 @@
     </div>
 
     <script>
-        // Cek jika sesi login sudah aktif
         window.onload = () => {
             let activeUser = localStorage.getItem('ritel_active_user');
             if (activeUser) {
                 let user = JSON.parse(activeUser);
                 if (user.role === 'Admin') window.location.href = 'admin.html';
+                else if (user.role === 'Owner') window.location.href = 'owner.html';
                 else window.location.href = 'kasir.html';
             }
         };
 
         function handleLogin(e) {
             e.preventDefault();
-            let userVal = document.getElementById('username').value.trim();
-            let passVal = document.getElementById('password').value.trim();
+            let userVal = document.getElementById('username'].value.trim().toLowerCase();
+            
+            let role = "Kasir";
+            if (userVal === 'admin') role = "Admin";
+            else if (userVal === 'owner') role = "Owner";
 
             let userData = {
                 nama_lengkap: userVal.charAt(0).toUpperCase() + userVal.slice(1),
-                role: userVal.toLowerCase() === 'admin' ? 'Admin' : 'Kasir'
+                role: role
             };
 
             localStorage.setItem('ritel_active_user', JSON.stringify(userData));
 
-            if (userData.role === 'Admin') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'kasir.html';
-            }
+            if (role === 'Admin') window.location.href = 'admin.html';
+            else if (role === 'Owner') window.location.href = 'owner.html';
+            else window.location.href = 'kasir.html';
         }
     </script>
 </body>
