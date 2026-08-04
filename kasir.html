@@ -29,7 +29,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">805 MART MANADO</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (RawBT Auto-Cut Active)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Dual Display & Auto-Cut)</p>
             </div>
         </div>
 
@@ -38,7 +38,7 @@
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>Online Sheets</span>
             </div>
             <button onclick="openCustomerDisplay()" class="bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-white/20">
-                <i class="fa-solid fa-desktop"></i> Layar Konsumen
+                <i class="fa-solid fa-desktop"></i> Buka Layar Konsumen
             </button>
             <div class="h-6 w-[1px] bg-white/20 mx-1"></div>
             <div class="text-right">
@@ -386,7 +386,6 @@
             textData += "   Silakan Datang Kembali\n";
             textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
 
-            // Perintah ESC/POS untuk Membuka Laci Uang & Auto-Cut Potong Kertas
             let ESC = "\x1B";
             let cashDrawerCommand = ESC + "p" + String.fromCharCode(0) + String.fromCharCode(25) + String.fromCharCode(250);
             let autoCutCommand = ESC + "m" + "\x1D" + "V" + "\x41" + "\x00";
@@ -406,6 +405,7 @@
             }
         }
 
+        // Pengelolaan Layar Konsumen (Dual Display)
         let customerWindow = null;
         function openCustomerDisplay() {
             customerWindow = window.open("", "CustomerDisplay", "width=600,height=700,left=800,top=100");
@@ -421,7 +421,7 @@
                 <body class="bg-slate-900 text-white h-screen flex flex-col justify-between p-8 antialiased">
                     <div class="text-center pb-4 border-b border-slate-800">
                         <h1 class="text-2xl font-extrabold tracking-wider text-red-500">805 MART MANADO</h1>
-                        <p class="text-xs text-slate-400 mt-1">Terima kasih telah berbelanja</p>
+                        <p class="text-xs text-slate-400 mt-1">Ruko Amethys A568 Kawanua Emerald City</p>
                     </div>
                     <div class="flex-1 overflow-y-auto py-4 space-y-3" id="cust-cart">
                         <div class="text-center py-16 text-slate-500">
