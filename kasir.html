@@ -29,7 +29,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">805 MART MANADO</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Dual Display & Auto-Cut)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Smart Keyboard & Dual Display)</p>
             </div>
         </div>
 
@@ -37,7 +37,7 @@
             <div class="bg-emerald-500/30 border border-emerald-400 text-emerald-100 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>Online Sheets</span>
             </div>
-            <button onclick="openCustomerDisplay()" class="bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-white/20">
+            <button onclick="openCustomerDisplayTab()" class="bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-white/20">
                 <i class="fa-solid fa-desktop"></i> Buka Layar Konsumen
             </button>
             <div class="h-6 w-[1px] bg-white/20 mx-1"></div>
@@ -69,6 +69,7 @@
                 </div>
             </div>
 
+            <!-- BAGIAN TOMBOL BAYAR YANG DIKEMBALIKAN UTUH -->
             <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-3">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <div class="flex justify-between text-slate-500 text-sm"><span>Total Belanja:</span><span id="display-total" class="font-extrabold text-slate-800 text-base">Rp 0</span></div>
@@ -82,18 +83,24 @@
             </div>
         </div>
 
-        <!-- KOLOM KANAN: SCANNER, KALKULATOR, & KATALOG -->
+        <!-- KOLOM KANAN: SCANNER, KONTROL KEYBOARD, KALKULATOR, & KATALOG -->
         <div class="w-[38%] flex flex-col gap-4 overflow-hidden">
             
-            <!-- Target Scanner Barcode Aktif -->
+            <!-- Target Scanner Barcode dengan Tombol Sembunyikan/Aktifkan Keyboard -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Scanner Barcode (Aktif)</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase">Target Scanner Barcode</label>
+                    <button onclick="toggleVirtualKeyboard()" id="kbd-toggle-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200">
+                        <i class="fa-solid fa-keyboard"></i> <span id="kbd-status-text">Keyboard: Mati</span>
+                    </button>
+                </div>
                 <div class="relative">
                     <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
-                    <input type="text" id="search-input" placeholder="Tembak Barcode di sini..." 
-                        class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner">
+                    <!-- Secara default readonly agar keyboard Android TIDAK menutupi layar, tapi scanner tetap aktif masuk -->
+                    <input type="text" id="search-input" readonly placeholder="Tembak Barcode di sini..." 
+                        class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner cursor-pointer">
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1 ml-1">*Kotak selalu fokus agar tembakan scanner langsung masuk.</p>
+                <p class="text-[10px] text-slate-400 mt-1 ml-1">*Klik tombol "Keyboard" di atas jika ingin mengetik manual.</p>
             </div>
 
             <!-- Keypad Kalkulator Pembayaran -->
@@ -142,7 +149,11 @@
         document.getElementById('cashier-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
 
         const searchInput = document.getElementById('search-input');
-        window.onload = () => { searchInput.focus(); loadProducts(); };
+        window.onload = () => { 
+            searchInput.focus(); 
+            loadProducts(); 
+            syncCustomerDisplay([], 0, 0, 0);
+        };
         
         document.addEventListener('click', (e) => {
             if (!['INPUT', 'BUTTON'].includes(e.target.tagName)) {
@@ -158,6 +169,24 @@
         function goHome() {
             if (activeUser.role === 'Admin') window.location.href = 'admin.html';
             else window.location.href = 'index.html';
+        }
+
+        // Tombol Kontrol Keyboard Virtual (Sembunyikan / Munculkan)
+        function toggleVirtualKeyboard() {
+            const btnText = document.getElementById('kbd-status-text');
+            const btnEl = document.getElementById('kbd-toggle-btn');
+            
+            if (searchInput.hasAttribute('readonly')) {
+                searchInput.removeAttribute('readonly');
+                searchInput.focus();
+                btnText.innerText = "Keyboard: Aktif";
+                btnEl.className = "bg-red-50 text-red-600 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-red-200";
+            } else {
+                searchInput.setAttribute('readonly', 'true');
+                searchInput.blur();
+                btnText.innerText = "Keyboard: Mati";
+                btnEl.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200";
+            }
         }
 
         async function loadProducts() {
@@ -405,67 +434,13 @@
             }
         }
 
-        // Pengelolaan Layar Konsumen (Dual Display)
-        let customerWindow = null;
-        function openCustomerDisplay() {
-            customerWindow = window.open("", "CustomerDisplay", "width=600,height=700,left=800,top=100");
-            customerWindow.document.write(`
-                <!DOCTYPE html>
-                <html lang="id">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Layar Belanja Konsumen - 805 Mart</title>
-                    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-                </head>
-                <body class="bg-slate-900 text-white h-screen flex flex-col justify-between p-8 antialiased">
-                    <div class="text-center pb-4 border-b border-slate-800">
-                        <h1 class="text-2xl font-extrabold tracking-wider text-red-500">805 MART MANADO</h1>
-                        <p class="text-xs text-slate-400 mt-1">Ruko Amethys A568 Kawanua Emerald City</p>
-                    </div>
-                    <div class="flex-1 overflow-y-auto py-4 space-y-3" id="cust-cart">
-                        <div class="text-center py-16 text-slate-500">
-                            <i class="fa-solid fa-cart-shopping text-4xl mb-3"></i>
-                            <p class="text-sm">Menunggu barang belanjaan...</p>
-                        </div>
-                    </div>
-                    <div class="bg-slate-800/80 p-6 rounded-3xl border border-slate-700/60 space-y-3">
-                        <div class="flex justify-between text-slate-300 text-sm"><span>Total:</span><span id="cust-total" class="font-bold text-white">Rp 0</span></div>
-                        <div class="flex justify-between text-slate-300 text-sm"><span>Bayar:</span><span id="cust-cash" class="font-bold text-red-400">Rp 0</span></div>
-                        <div class="flex justify-between border-t border-slate-700 pt-3 text-xl font-extrabold"><span class="text-slate-200">Kembali:</span><span id="cust-change" class="text-emerald-400">Rp 0</span></div>
-                    </div>
-                </body>
-                </html>
-            `);
-            customerWindow.document.close();
-            renderCart();
+        function syncCustomerDisplay(items, total, cash, change) {
+            let displayData = { items, total, cash, change };
+            localStorage.setItem('ritel_live_display', JSON.stringify(displayData));
         }
 
-        function syncCustomerDisplay(items, total, cash, change) {
-            if (!customerWindow || customerWindow.closed) return;
-            const custCart = customerWindow.document.getElementById('cust-cart');
-            const custTotal = customerWindow.document.getElementById('cust-total');
-            const custCash = customerWindow.document.getElementById('cust-cash');
-            const custChange = customerWindow.document.getElementById('cust-change');
-            if (!custCart) return;
-
-            if (items.length === 0) {
-                custCart.innerHTML = `<div class="text-center py-16 text-slate-500"><i class="fa-solid fa-cart-shopping text-4xl mb-3"></i><p class="text-sm">Menunggu barang belanjaan...</p></div>`;
-            } else {
-                custCart.innerHTML = '';
-                items.forEach(i => {
-                    let hReal = Number(i["Harga Jual"]) - (i.diskon || 0);
-                    custCart.innerHTML += `
-                        <div class="flex justify-between items-center bg-slate-800/40 px-4 py-3 rounded-2xl border border-slate-800 text-sm">
-                            <div><h4 class="font-bold text-white">${i["Nama Barang"]}</h4><span class="text-xs text-slate-400">Rp ${hReal.toLocaleString('id-ID')} x ${i.qty}</span></div>
-                            <span class="font-extrabold text-red-400">Rp ${(hReal * i.qty).toLocaleString('id-ID')}</span>
-                        </div>
-                    `;
-                });
-            }
-            custTotal.innerText = `Rp ${total.toLocaleString('id-ID')}`;
-            custCash.innerText = `Rp ${cash.toLocaleString('id-ID')}`;
-            custChange.innerText = change >= 0 ? `Rp ${change.toLocaleString('id-ID')}` : `Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}`;
+        function openCustomerDisplayTab() {
+            window.open('customer.html', '_blank');
         }
 
         loadProducts();
