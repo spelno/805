@@ -29,7 +29,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">805 MART MANADO</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Smart Keyboard & Dual Display)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Blueprint TPOS 400MP)</p>
             </div>
         </div>
 
@@ -69,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- BAGIAN TOMBOL BAYAR YANG DIKEMBALIKAN UTUH -->
             <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-3">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
                     <div class="flex justify-between text-slate-500 text-sm"><span>Total Belanja:</span><span id="display-total" class="font-extrabold text-slate-800 text-base">Rp 0</span></div>
@@ -96,7 +95,6 @@
                 </div>
                 <div class="relative">
                     <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
-                    <!-- Secara default readonly agar keyboard Android TIDAK menutupi layar, tapi scanner tetap aktif masuk -->
                     <input type="text" id="search-input" readonly placeholder="Tembak Barcode di sini..." 
                         class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner cursor-pointer">
                 </div>
@@ -139,6 +137,7 @@
     </main>
 
     <script>
+        // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI ANTARA TANDA KUTIP DI BAWAH INI
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         let products = [];
@@ -171,7 +170,6 @@
             else window.location.href = 'index.html';
         }
 
-        // Tombol Kontrol Keyboard Virtual (Sembunyikan / Munculkan)
         function toggleVirtualKeyboard() {
             const btnText = document.getElementById('kbd-status-text');
             const btnEl = document.getElementById('kbd-toggle-btn');
