@@ -9,30 +9,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        /* PENGATURAN MUTLAK CSS PRINT THERMAL */
-        @media print {
-            body * {
-                visibility: hidden !important;
-            }
-            #thermal-receipt, #thermal-receipt * {
-                visibility: visible !important;
-            }
-            #thermal-receipt {
-                display: block !important;
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 58mm !important; /* Standar printer thermal kecil (bisa otomatis menyesuaikan 80mm) */
-                font-family: 'Courier New', Courier, monospace !important;
-                font-size: 11px !important;
-                line-height: 1.2 !important;
-                color: #000 !important;
-                background: #fff !important;
-                padding: 4mm !important;
-                margin: 0 !important;
-            }
-        }
     </style>
     <script>
         const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
@@ -147,54 +123,8 @@
         </div>
     </main>
 
-    <!-- STRUK THERMAL KHUSUS CETAK (HIDDEN DI LAYAR BIASA, MUNCUL SAAT PRINT) -->
-    <div id="thermal-receipt" style="display: none;">
-        <div style="text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 2px;">RITEL EXPRESS</div>
-        <div style="text-align: center; font-size: 10px; margin-bottom: 2px;">Jl. Raya Perbelanjaan Utama No. 88</div>
-        <div style="text-align: center; font-size: 10px; margin-bottom: 6px;">Telp: 0812-3456-7890</div>
-        
-        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-        <div style="font-size: 10px; margin-bottom: 6px;">
-            <div>No. Nota : <span id="rcpt-trx-id">RX-9982</span></div>
-            <div>Waktu   : <span id="rcpt-date">04/08/2026 18:55</span></div>
-            <div>Kasir   : <span id="rcpt-cashier">Kasir</span></div>
-        </div>
-        
-        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-        <div id="rcpt-items-container" style="font-size: 10px; margin-bottom: 6px;">
-            <!-- Rincian Item & Diskon Ditempatkan Di Sini -->
-        </div>
-        
-        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-        <div style="font-size: 10px; margin-bottom: 6px;">
-            <div style="display: flex; justify-content: space-between;">
-                <span>Total Belanja</span>
-                <span id="rcpt-subtotal">Rp 0</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span>Tunai Dibayar</span>
-                <span id="rcpt-cash">Rp 0</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 2px;">
-                <span>KEMBALIAN</span>
-                <span id="rcpt-change">Rp 0</span>
-            </div>
-        </div>
-        
-        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
-        
-        <div style="text-align: center; font-size: 10px; margin-top: 8px;">
-            <div style="font-weight: bold;">TERIMA KASIH</div>
-            <div>Silakan Datang Kembali</div>
-            <div style="margin-top: 4px; font-size: 9px; color: #444;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</div>
-        </div>
-    </div>
-
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwnir8I7vxvXiSP02I9L8jmsO6p7BNEbXvi3YDWkxTfc_hionLp9d3HYnkEtgT-_fFv/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzjXdN0x9RdTGjoAXFYP1ooRhKPtHLyPCedYl19KhdNiSyA784wLfapIa5HxgQp5OR2/exec";
 
         let products = [];
         let cart = [];
@@ -276,7 +206,7 @@
                 if (item.qty < p.Stok) item.qty++;
                 else alert('Stok tidak mencukupi!');
             } else {
-                cart.push({ ...p, qty: 1, diskon: 0 }); // Dukungan properti diskon per item
+                cart.push({ ...p, qty: 1, diskon: 0 });
             }
             renderCart();
             searchInput.focus();
@@ -314,7 +244,7 @@
                     <div class="py-3 flex justify-between items-center text-sm">
                         <div class="flex-1 pr-4">
                             <h4 class="font-extrabold text-slate-800 text-sm">${item["Nama Barang"]}</h4>
-                            <span class="text-xs text-slate-400">Rp ${Number(item["Harga Jual"]).toLocaleString('id-ID')} ${item.diskon > fnGetZero() ? `<span class="text-emerald-600 font-bold ml-1">(-Rp ${item.diskon.toLocaleString('id-ID')})</span>` : ''}</span>
+                            <span class="text-xs text-slate-400">Rp ${Number(item["Harga Jual"]).toLocaleString('id-ID')} ${item.diskon > 0 ? `<span class="text-emerald-600 font-bold ml-1">(-Rp ${item.diskon.toLocaleString('id-ID')})</span>` : ''}</span>
                         </div>
                         <div class="flex items-center gap-4">
                             <span class="font-extrabold text-red-600 text-base">Rp ${(hargaReal * item.qty).toLocaleString('id-ID')}</span>
@@ -330,8 +260,6 @@
             badge.innerText = `${totalQty} Item`;
             calculatePayment(subtotal);
         }
-
-        function fnGetZero() { return 0; }
 
         function changeQty(idx, delta) {
             cart[idx].qty += delta;
@@ -383,9 +311,6 @@
                 });
             } catch (e) {}
 
-            // SIAPKAN STRUK THERMAL
-            buildThermalReceipt(subtotal, cash, change);
-
             let triggerDrawer = confirm(
                 `TRANSAKSI BERHASIL!\n\n` +
                 `Total Belanja: Rp ${subtotal.toLocaleString('id-ID')}\n` +
@@ -395,7 +320,7 @@
             );
 
             if (triggerDrawer) {
-                window.print();
+                printReceipt(subtotal, cash, change);
             }
 
             cart = [];
@@ -406,40 +331,95 @@
             searchInput.focus();
         }
 
-        function buildThermalReceipt(subtotal, cash, change) {
-            document.getElementById('rcpt-trx-id').innerText = "RX-" + Math.floor(100000 + Math.random() * 900000);
-            
+        function printReceipt(subtotal, cash, change) {
+            let trxId = "RX-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('rcpt-date').innerText = dateStr;
-            document.getElementById('rcpt-cashier').innerText = activeUser.nama_lengkap;
+            let cashierName = activeUser.nama_lengkap;
 
-            let rcptContainer = document.getElementById('rcpt-items-container');
-            rcptContainer.innerHTML = '';
-            
+            let itemsHtml = '';
             cart.forEach(i => {
                 let hargaAsli = Number(i["Harga Jual"]);
                 let diskon = i.diskon || 0;
                 let hargaReal = hargaAsli - diskon;
                 let totalItem = hargaReal * i.qty;
 
-                let rowHtml = `<div style="margin-bottom: 3px;">
-                    <div>${i["Nama Barang"]}</div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>${i.qty} x ${hargaAsli.toLocaleString('id-ID')}</span>
-                        <span>Rp ${totalItem.toLocaleString('id-ID')}</span>
-                    </div>`;
-                
+                itemsHtml += `
+                    <div style="margin-bottom: 5px;">
+                        <div><b>${i["Nama Barang"]}</b></div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>${i.qty} x ${hargaAsli.toLocaleString('id-ID')}</span>
+                            <span>Rp ${totalItem.toLocaleString('id-ID')}</span>
+                        </div>
+                `;
                 if (diskon > 0) {
-                    rowHtml += `<div style="color: #333; font-size: 9px;">(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})</div>`;
+                    itemsHtml += `<div style="font-size: 9px; color: #333;">Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')}</div>`;
                 }
-                rowHtml += `</div>`;
-                rcptContainer.innerHTML += rowHtml;
+                itemsHtml += `</div>`;
             });
 
-            document.getElementById('rcpt-subtotal').innerText = `Rp ${subtotal.toLocaleString('id-ID')}`;
-            document.getElementById('rcpt-cash').innerText = `Rp ${cash.toLocaleString('id-ID')}`;
-            document.getElementById('rcpt-change').innerText = `Rp ${change.toLocaleString('id-ID')}`;
+            let receiptWindow = window.open('', '_blank', 'width=350,height=600');
+            receiptWindow.document.write(`
+                <!DOCTYPE html>
+                <html lang="id">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Struk Belanja - Ritel Express</title>
+                    <style>
+                        body {
+                            font-family: 'Courier New', Courier, monospace;
+                            font-size: 11px;
+                            line-height: 1.2;
+                            color: #000;
+                            background: #fff;
+                            width: 58mm;
+                            margin: 0 auto;
+                            padding: 5px;
+                        }
+                        .center { text-align: center; }
+                        .line { border-top: 1px dashed #000; margin: 6px 0; }
+                        .flex { display: flex; justify-content: space-between; }
+                        .bold { font-weight: bold; }
+                    </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                    <div class="center bold" style="font-size: 13px;">RITEL EXPRESS</div>
+                    <div class="center" style="font-size: 10px;">Jl. Raya Perbelanjaan Utama No. 88</div>
+                    <div class="center" style="font-size: 10px;">Telp: 0812-3456-7890</div>
+                    
+                    <div class="line"></div>
+                    
+                    <div style="font-size: 10px;">
+                        <div>No. Nota : ${trxId}</div>
+                        <div>Waktu   : ${dateStr}</div>
+                        <div>Kasir   : ${cashierName}</div>
+                    </div>
+                    
+                    <div class="line"></div>
+                    
+                    <div style="font-size: 10px;">
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div class="line"></div>
+                    
+                    <div style="font-size: 10px;">
+                        <div class="flex"><span>Total Belanja</span> <span>Rp ${subtotal.toLocaleString('id-ID')}</span></div>
+                        <div class="flex"><span>Tunai Dibayar</span> <span>Rp ${cash.toLocaleString('id-ID')}</span></div>
+                        <div class="flex bold" style="font-size: 11px; margin-top: 3px;"><span>KEMBALIAN</span> <span>Rp ${change.toLocaleString('id-ID')}</span></div>
+                    </div>
+                    
+                    <div class="line"></div>
+                    
+                    <div class="center" style="font-size: 10px; margin-top: 8px;">
+                        <div class="bold">TERIMA KASIH</div>
+                        <div>Silakan Datang Kembali</div>
+                        <div style="margin-top: 4px; font-size: 8px;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            receiptWindow.document.close();
         }
 
         let customerWindow = null;
