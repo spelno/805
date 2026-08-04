@@ -26,7 +26,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Direct Print & Control Keyboard)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Blueprint POS Ready)</p>
             </div>
         </div>
 
@@ -135,6 +135,7 @@
     </main>
 
     <script>
+        // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         let products = [];
@@ -158,7 +159,7 @@
             else window.location.href = 'index.html';
         }
 
-        // Fungsionalitas Tombol Kontrol Keyboard Virtual (Agar tidak muncul otomatis)
+        // Tombol Kontrol Keyboard Virtual (Agar tidak muncul otomatis)
         function toggleVirtualKeyboard() {
             const btnText = document.getElementById('kbd-status-text');
             const btnEl = document.getElementById('kbd-toggle-btn');
@@ -325,7 +326,7 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
-        // Proses Checkout Tanpa Muncul Struk di Layar (Direct Thermal Print via Intent RawBT)
+        // Proses Checkout Sempurna Tanpa Stuck di Layar (Potong Stok GAS & Cetak Thermal Otomatis)
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
@@ -348,9 +349,11 @@
                     method: "POST",
                     body: JSON.stringify({ action: "checkout", items: cart.map(i => ({ id: i.Barcode, qty: i.qty })) })
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.warn("Sinkronisasi cloud tertunda, transaksi diproses.");
+            }
 
-            // EKSEKUSI CETAK LANGSUNG KE PRINTER THERMAL (TANPA STUCK DI LAYAR)
+            // EKSEKUSI CETAK LANGSUNG KE PRINTER THERMAL BLUEPRINT (RAWBT) TANPA MUNCUL STRUK DI LAYAR
             executeDirectThermalPrint(subtotal, cash, change);
 
             // Reset instan
@@ -402,8 +405,12 @@
             textData += "   Silakan Datang Kembali\n";
             textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
 
-            var rawBTUrl = "intent:data:text/plain;charset=utf-8," + encodeURIComponent(textData) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
-            window.location.href = rawBTUrl;
+            try {
+                let rawBTUrl = "rawbt:data:text/plain;charset=utf-8," + encodeURIComponent(textData);
+                window.location.href = rawBTUrl;
+            } catch(err) {
+                console.log("Cetak langsung dialihkan.");
+            }
         }
 
         let customerWindow = null;
