@@ -26,7 +26,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Thermal Receipt Ready)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (POS Utama)</p>
             </div>
         </div>
 
@@ -124,7 +124,7 @@
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzjXdN0x9RdTGjoAXFYP1ooRhKPtHLyPCedYl19KhdNiSyA784wLfapIa5HxgQp5OR2/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxVqtDJtiTrk3_ltRbfinTOYHZO6S2PWs04X0FmLZ7sCzgCn9cMsPqTmjrXFCxQvAVR/exec";
 
         let products = [];
         let cart = [];
@@ -162,7 +162,7 @@
             const grid = document.getElementById('product-grid');
             grid.innerHTML = '';
             if (list.length === 0) {
-                grid.innerHTML = `<p class="text-slate-400 text-center py-6 text-xs">Belum ada produk di Server.</p>`;
+                grid.innerHTML = `<p class="text-slate-400 text-center py-6 text-xs">Belum ada produk di Google Sheets.</p>`;
                 return;
             }
             list.forEach(p => {
@@ -298,9 +298,19 @@
 
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
+            
+            // HILANGKAN FOKUS AGAR VIRTUAL KEYBOARD OTOMATIS TERTUTUP
+            if(document.activeElement) {
+                document.activeElement.blur();
+            }
+
             let subtotal = cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0);
             let cash = parseInt(numpadValue) || 0;
-            if (cash < subtotal) return alert('Uang pembayaran kurang!');
+            if (cash < subtotal) {
+                alert('Uang pembayaran kurang!');
+                searchInput.focus();
+                return;
+            }
 
             let change = cash - subtotal;
 
@@ -328,7 +338,10 @@
             document.getElementById('numpad-display').innerText = "0";
             loadProducts();
             renderCart();
-            searchInput.focus();
+            
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
         }
 
         function printReceipt(subtotal, cash, change) {
