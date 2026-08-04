@@ -9,6 +9,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Pengaturan khusus cetak thermal agar struk rapi dan tidak memunculkan halaman ekstra */
+        @media print {
+            body * { visibility: hidden; }
+            #print-receipt-area, #print-receipt-area * { visibility: visible; }
+            #print-receipt-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
     <script>
         // Validasi Sesi Aman
@@ -137,6 +144,9 @@
             </div>
         </div>
     </main>
+
+    <!-- Area Tersembunyi untuk Cetak Struk Otomatis -->
+    <div id="print-receipt-area" style="display: none;"></div>
 
     <script>
         // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
@@ -330,7 +340,7 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
-        // Proses Checkout Aman & Bebas Error (Potong Stok GAS & Cetak Thermal Otomatis via RawBT Intent)
+        // Proses Checkout Sempurna, Aman, & Langsung Cetak via Window Print (Tertangkap RawBT)
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
@@ -357,7 +367,7 @@
                 console.warn("Sinkronisasi cloud tertunda, transaksi diproses lokal.");
             }
 
-            // EKSEKUSI CETAK THERMAL LANGSUNG KE PRINTER BLUEPRINT (RAWBT INTENT)
+            // EKSEKUSI CETAK THERMAL OTOMATIS
             executeDirectThermalPrint(subtotal, cash, change);
 
             // Reset instan tanpa error
@@ -378,14 +388,18 @@
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             let cashierName = activeUser.nama_lengkap;
 
-            let textData = "      RITEL EXPRESS\n";
-            textData += "  Jl. Raya Perbelanjaan Utama\n";
-            textData += "      Telp: 081234567890\n";
-            textData += "--------------------------------\n";
-            textData += `No. Nota : ${trxId}\n`;
-            textData += `Waktu   : ${dateStr}\n`;
-            textData += `Kasir   : ${cashierName}\n`;
-            textData += "--------------------------------\n";
+            let printContainer = document.getElementById('print-receipt-area');
+            let htmlContent = `
+                <div style="width: 270px; font-family: monospace; font-size: 11px; padding: 5px; color: #000; line-height: 1.2;">
+                    <div style="text-align: center; font-weight: bold; font-size: 13px;">RITEL EXPRESS</div>
+                    <div style="text-align: center;">Jl. Raya Perbelanjaan Utama</div>
+                    <div style="text-align: center;">Telp: 081234567890</div>
+                    <div>--------------------------------</div>
+                    <div>No. Nota : ${trxId}</div>
+                    <div>Waktu   : ${dateStr}</div>
+                    <div>Kasir   : ${cashierName}</div>
+                    <div>--------------------------------</div>
+            `;
 
             cart.forEach(i => {
                 let hargaAsli = Number(i["Harga Jual"]);
@@ -393,34 +407,29 @@
                 let hargaReal = hargaAsli - diskon;
                 let totalItem = hargaReal * i.qty;
 
-                textData += `${i["Nama Barang"]}\n`;
-                textData += `${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}\n`;
+                htmlContent += `
+                    <div style="font-weight: bold;">${i["Nama Barang"]}</div>
+                    <div>${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}</div>
+                `;
                 if (diskon > 0) {
-                    textData += `(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})\n`;
+                    htmlContent += `<div>(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})</div>`;
                 }
             });
 
-            textData += "--------------------------------\n";
-            textData += `Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}\n`;
-            textData += `Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}\n`;
-            textData += `KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}\n`;
-            textData += "--------------------------------\n";
-            textData += "       TERIMA KASIH\n";
-            textData += "   Silakan Datang Kembali\n";
-            textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
+            htmlContent += `
+                    <div>--------------------------------</div>
+                    <div>Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}</div>
+                    <div>Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}</div>
+                    <div>KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}</div>
+                    <div>--------------------------------</div>
+                    <div style="text-align: center;">TERIMA KASIH</div>
+                    <div style="text-align: center;">Silakan Datang Kembali</div>
+                    <div style="text-align: center; font-size: 9px;">Barang yg dibeli tdk dapat ditukar</div>
+                </div>
+            `;
 
-            // Format Intent Resmi RawBT (Bebas Error Unknown URL Scheme)
-            try {
-                let intentUrl = "intent:" + encodeURI(textData) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
-                let printLink = document.createElement('a');
-                printLink.href = intentUrl;
-                printLink.style.display = 'none';
-                document.body.appendChild(printLink);
-                printLink.click();
-                document.body.removeChild(printLink);
-            } catch(err) {
-                console.log("Cetak langsung dialihkan:", err);
-            }
+            printContainer.innerHTML = htmlContent;
+            window.print();
         }
 
         let customerWindow = null;
