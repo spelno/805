@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir (POS) - Ritel Express</title>
+    <title>Kasir (POS) - 805 Mart Manado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -28,8 +28,8 @@
             </button>
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
-                <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Auto-Cut & Cash Drawer Active)</p>
+                <h1 class="font-bold text-lg tracking-wide">805 MART MANADO</h1>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (RawBT Auto-Cut Active)</p>
             </div>
         </div>
 
@@ -85,7 +85,7 @@
         <!-- KOLOM KANAN: SCANNER, KALKULATOR, & KATALOG -->
         <div class="w-[38%] flex flex-col gap-4 overflow-hidden">
             
-            <!-- Target Scanner Barcode Diperbaiki Agar Scanner Langsung Masuk -->
+            <!-- Target Scanner Barcode Aktif -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Scanner Barcode (Aktif)</label>
                 <div class="relative">
@@ -144,7 +144,6 @@
         const searchInput = document.getElementById('search-input');
         window.onload = () => { searchInput.focus(); loadProducts(); };
         
-        // Menjaga agar fokus selalu kembali ke scanner barcode setelah klik di mana saja
         document.addEventListener('click', (e) => {
             if (!['INPUT', 'BUTTON'].includes(e.target.tagName)) {
                 searchInput.focus();
@@ -192,7 +191,6 @@
             });
         }
 
-        // Scanner Barcode Handler
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 let code = this.value.trim();
@@ -311,7 +309,6 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
-        // Proses Checkout Sempurna dengan Auto-Cut & Cash Drawer Trigger
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
@@ -339,10 +336,8 @@
                 console.warn("Sinkronisasi cloud tertunda, transaksi diproses lokal.");
             }
 
-            // EKSEKUSI CETAK THERMAL VIA INTENT RAWBT (LENGKAP DENGAN KODE AUTO-CUT & CASH DRAWER)
             executeRawBTIntentPrint(currentCart, subtotal, cash, change);
 
-            // Reset instan
             cart = [];
             numpadValue = "0";
             document.getElementById('numpad-display').innerText = "0";
@@ -355,14 +350,14 @@
         }
 
         function executeRawBTIntentPrint(items, subtotal, cash, change) {
-            let trxId = "RX-" + Math.floor(100000 + Math.random() * 900000);
+            let trxId = "805-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             let cashierName = activeUser.nama_lengkap;
 
-            let textData = "      RITEL EXPRESS\n";
-            textData += "  Jl. Raya Perbelanjaan Utama\n";
-            textData += "      Telp: 081234567890\n";
+            let textData = "        805 MART\n";
+            textData += " Ruko Amethys A568 Kompleks\n";
+            textData += " Kawanua Emerald City Manado\n";
             textData += "--------------------------------\n";
             textData += `No. Nota : ${trxId}\n`;
             textData += `Waktu   : ${dateStr}\n`;
@@ -391,14 +386,13 @@
             textData += "   Silakan Datang Kembali\n";
             textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
 
-            // ESC/POS Command: Membuka Laci Uang (Cash Drawer) & Auto Cut Potong Kertas
+            // Perintah ESC/POS untuk Membuka Laci Uang & Auto-Cut Potong Kertas
             let ESC = "\x1B";
             let cashDrawerCommand = ESC + "p" + String.fromCharCode(0) + String.fromCharCode(25) + String.fromCharCode(250);
             let autoCutCommand = ESC + "m" + "\x1D" + "V" + "\x41" + "\x00";
 
             let finalPrintPayload = textData + cashDrawerCommand + autoCutCommand;
 
-            // Format Intent resmi RawBT
             try {
                 let intentUrl = "intent:" + encodeURI(finalPrintPayload) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
                 let printLink = document.createElement('a');
@@ -420,13 +414,13 @@
                 <html lang="id">
                 <head>
                     <meta charset="UTF-8">
-                    <title>Layar Belanja Konsumen - Ritel Express</title>
+                    <title>Layar Belanja Konsumen - 805 Mart</title>
                     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"><\/script>
                     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
                 </head>
                 <body class="bg-slate-900 text-white h-screen flex flex-col justify-between p-8 antialiased">
                     <div class="text-center pb-4 border-b border-slate-800">
-                        <h1 class="text-2xl font-extrabold tracking-wider text-red-500">RITEL EXPRESS</h1>
+                        <h1 class="text-2xl font-extrabold tracking-wider text-red-500">805 MART MANADO</h1>
                         <p class="text-xs text-slate-400 mt-1">Terima kasih telah berbelanja</p>
                     </div>
                     <div class="flex-1 overflow-y-auto py-4 space-y-3" id="cust-cart">
