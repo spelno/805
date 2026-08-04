@@ -3,86 +3,445 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - 805 Mart Manado</title>
+    <title>Kasir (POS) - 805 Mart Manado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
+    <script>
+        let activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
+        if (!activeUser) {
+            activeUser = { nama_lengkap: "Kasir Utama", role: "Kasir" };
+            localStorage.setItem('ritel_active_user', JSON.stringify(activeUser));
+        }
+    </script>
 </head>
-<body class="bg-slate-900 text-slate-800 h-screen flex items-center justify-center p-4 antialiased">
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
     
-    <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl border border-slate-100 space-y-6">
-        
-        <!-- BAGIAN LOGO (Memanggil file Logo.png di repository Anda tanpa teks nama toko) -->
-        <div class="text-center space-y-2">
-            <div class="inline-flex justify-center items-center w-24 h-24 rounded-2xl bg-slate-50 border border-slate-100 shadow-inner mb-2 overflow-hidden p-2">
-                <img src="Logo.png" alt="Logo 805 Mart" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://via.placeholder.cpp/150?text=805+Mart';">
-            </div>
-            <p class="text-xs text-slate-400 font-medium">Silakan masuk menggunakan akun kasir Anda</p>
-        </div>
-
-        <!-- FORM LOGIN -->
-        <form onsubmit="handleLogin(event)" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / ID Kasir</label>
-                <div class="relative">
-                    <i class="fa-solid fa-user absolute left-4 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="text" id="username" required placeholder="Masukkan username..." 
-                        class="w-full bg-slate-50 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">PIN / Password</label>
-                <div class="relative">
-                    <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400 text-sm"></i>
-                    <input type="password" id="password" required placeholder="Masukkan PIN..." 
-                        class="w-full bg-slate-50 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold">
-                </div>
-            </div>
-
-            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer mt-2">
-                <i class="fa-solid fa-right-to-bracket"></i> Masuk Terminal Kasir
+    <!-- HEADER KASIR -->
+    <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <button onclick="goHome()" class="bg-white/25 hover:bg-white/35 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali">
+                <i class="fa-solid fa-house text-sm"></i>
             </button>
-        </form>
-
-        <div class="text-center pt-2 border-t border-slate-100">
-            <p class="text-[11px] text-slate-400">Ruko Amethys A568 Kompleks Kawanua Emerald City Manado</p>
+            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">805 MART MANADO</h1>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Blueprint TPOS 400MP)</p>
+            </div>
         </div>
-    </div>
+
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500/30 border border-emerald-400 text-emerald-100 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>Online Sheets</span>
+            </div>
+            <button onclick="openCustomerDisplayTab()" class="bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer border border-white/20">
+                <i class="fa-solid fa-desktop"></i> Buka Layar Konsumen
+            </button>
+            <div class="h-6 w-[1px] bg-white/20 mx-1"></div>
+            <div class="text-right">
+                <p id="cashier-name" class="text-sm font-bold">Kasir</p>
+                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar</button>
+            </div>
+            <div id="cashier-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">K</div>
+        </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="flex-1 flex overflow-hidden p-4 gap-4">
+        
+        <!-- KOLOM KIRI: KERANJANG BELANJA -->
+        <div class="w-[62%] bg-white border border-slate-200 rounded-3xl flex flex-col shadow-lg overflow-hidden z-10">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-red-50/70">
+                <h2 class="font-extrabold text-red-600 text-lg flex items-center gap-2.5">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i> Keranjang Belanja Pelanggan
+                </h2>
+                <span id="cart-count" class="bg-red-600 text-white text-xs px-3.5 py-1.5 rounded-full font-extrabold shadow-sm">0 Item</span>
+            </div>
+
+            <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-3 divide-y divide-slate-100">
+                <div class="text-center py-24 text-slate-400">
+                    <i class="fa-solid fa-cart-arrow-down text-5xl mb-3 text-slate-300"></i>
+                    <p class="font-bold text-base">Keranjang belanja masih kosong.</p>
+                    <p class="text-xs mt-1">Silakan tembak barcode produk menggunakan alat scanner inframerah.</p>
+                </div>
+            </div>
+
+            <div class="p-5 bg-slate-50 border-t border-slate-200 space-y-3">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                    <div class="flex justify-between text-slate-500 text-sm"><span>Total Belanja:</span><span id="display-total" class="font-extrabold text-slate-800 text-base">Rp 0</span></div>
+                    <div class="flex justify-between text-slate-500 text-sm"><span>Uang Dibayar:</span><span id="display-cash" class="font-bold text-red-600 text-base">Rp 0</span></div>
+                    <div class="flex justify-between border-t border-slate-100 pt-2 text-lg font-extrabold"><span class="text-slate-700">Kembalian:</span><span id="display-change" class="text-emerald-600">Rp 0</span></div>
+                </div>
+
+                <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-wallet text-lg"></i> Selesaikan Transaksi & Cetak Otomatis
+                </button>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: SCANNER, KONTROL KEYBOARD, KALKULATOR, & KATALOG -->
+        <div class="w-[38%] flex flex-col gap-4 overflow-hidden">
+            
+            <!-- Target Scanner Barcode dengan Tombol Sembunyikan/Aktifkan Keyboard -->
+            <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase">Target Scanner Barcode</label>
+                    <button onclick="toggleVirtualKeyboard()" id="kbd-toggle-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200">
+                        <i class="fa-solid fa-keyboard"></i> <span id="kbd-status-text">Keyboard: Mati</span>
+                    </button>
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
+                    <input type="text" id="search-input" readonly placeholder="Tembak Barcode di sini..." 
+                        class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner cursor-pointer">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1 ml-1">*Klik tombol "Keyboard" di atas jika ingin mengetik manual.</p>
+            </div>
+
+            <!-- Keypad Kalkulator Pembayaran -->
+            <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
+                <div class="flex justify-between items-center text-xs text-slate-500 px-1 mb-2 font-bold">
+                    <span>Nominal Pembayaran</span>
+                    <span id="numpad-display" class="font-mono font-extrabold text-red-600 text-base">0</span>
+                </div>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="pressNumpad('7')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">7</button>
+                    <button onclick="pressNumpad('8')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">8</button>
+                    <button onclick="pressNumpad('9')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">9</button>
+                    <button onclick="pressNumpad('C')" class="bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-xl font-bold text-sm border border-red-100 cursor-pointer">C</button>
+                    <button onclick="pressNumpad('4')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">4</button>
+                    <button onclick="pressNumpad('5')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">5</button>
+                    <button onclick="pressNumpad('6')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">6</button>
+                    <button onclick="pressNumpad('DEL')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 rounded-xl font-bold text-sm cursor-pointer"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="pressNumpad('1')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">1</button>
+                    <button onclick="pressNumpad('2')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">2</button>
+                    <button onclick="pressNumpad('3')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">3</button>
+                    <button onclick="pressNumpad('00')" class="bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">00</button>
+                    <button onclick="pressNumpad('0')" class="col-span-2 bg-slate-50 hover:bg-slate-100 py-2 rounded-xl font-bold text-sm border border-slate-200 cursor-pointer">0</button>
+                    <button onclick="pressNumpad('50000')" class="bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-xl font-bold text-xs border border-red-200 cursor-pointer">50rb</button>
+                    <button onclick="pressNumpad('100000')" class="bg-red-50 text-red-600 hover:bg-red-100 py-2 rounded-xl font-bold text-xs border border-red-200 cursor-pointer">100rb</button>
+                </div>
+            </div>
+
+            <!-- Katalog Cepat -->
+            <div class="flex-1 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                <h3 class="font-bold text-slate-700 text-xs uppercase mb-2">Katalog Cepat Produk</h3>
+                <div id="product-grid" class="flex-1 overflow-y-auto space-y-2 pr-1">
+                    <p class="text-slate-400 text-center py-6 text-xs">Memuat katalog...</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
-        // Cek jika sudah login sebelumnya
-        window.onload = () => {
-            let activeUser = localStorage.getItem('ritel_active_user');
-            if (activeUser) {
-                let user = JSON.parse(activeUser);
-                if (user.role === 'Admin') window.location.href = 'admin.html';
-                else window.location.href = 'kasir.html';
-            }
+        // URL Web App Google Apps Script Anda
+        const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
+
+        let products = [];
+        let cart = [];
+        let numpadValue = "0";
+
+        document.getElementById('cashier-name').innerText = activeUser.nama_lengkap;
+        document.getElementById('cashier-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
+
+        const searchInput = document.getElementById('search-input');
+        window.onload = () => { 
+            searchInput.focus(); 
+            loadProducts(); 
+            syncCustomerDisplay([], 0, 0, 0);
         };
+        
+        document.addEventListener('click', (e) => {
+            if (!['INPUT', 'BUTTON'].includes(e.target.tagName)) {
+                searchInput.focus();
+            }
+        });
 
-        function handleLogin(e) {
-            e.preventDefault();
-            let userVal = document.getElementById('username').value.trim();
-            let passVal = document.getElementById('password').value.trim();
+        function logout() {
+            localStorage.removeItem('ritel_active_user');
+            window.location.href = 'index.html';
+        }
 
-            // Sesi login uji coba / default kasir (Bisa dihubungkan ke database Google Sheets Anda nanti)
-            let userData = {
-                nama_lengkap: userVal.charAt(0).toUpperCase() + userVal.slice(1),
-                role: userVal.toLowerCase() === 'admin' ? 'Admin' : 'Kasir'
-            };
+        function goHome() {
+            if (activeUser.role === 'Admin') window.location.href = 'admin.html';
+            else window.location.href = 'index.html';
+        }
 
-            localStorage.setItem('ritel_active_user', JSON.stringify(userData));
-
-            if (userData.role === 'Admin') {
-                window.location.href = 'admin.html';
+        function toggleVirtualKeyboard() {
+            const btnText = document.getElementById('kbd-status-text');
+            const btnEl = document.getElementById('kbd-toggle-btn');
+            
+            if (searchInput.hasAttribute('readonly')) {
+                searchInput.removeAttribute('readonly');
+                searchInput.focus();
+                btnText.innerText = "Keyboard: Aktif";
+                btnEl.className = "bg-red-50 text-red-600 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-red-200";
             } else {
-                window.location.href = 'kasir.html';
+                searchInput.setAttribute('readonly', 'true');
+                searchInput.blur();
+                btnText.innerText = "Keyboard: Mati";
+                btnEl.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200";
             }
         }
+
+        async function loadProducts() {
+            try {
+                let res = await fetch(`${API_URL}?action=getProducts`);
+                products = await res.json();
+                renderProducts(products);
+            } catch (err) {
+                products = [];
+                renderProducts(products);
+            }
+        }
+
+        function renderProducts(list) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+            if (list.length === 0) {
+                grid.innerHTML = `<p class="text-slate-400 text-center py-6 text-xs">Belum ada produk di Google Sheets.</p>`;
+                return;
+            }
+            list.forEach(p => {
+                grid.innerHTML += `
+                    <div onclick="addToCart('${p.Barcode}')" class="bg-slate-50 hover:bg-red-50 p-2.5 rounded-xl border border-slate-200 cursor-pointer transition flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-xs">${p["Nama Barang"]}</h4>
+                            <span class="text-[10px] text-slate-400 font-mono">Barcode: ${p.Barcode} | Stok: ${p.Stok}</span>
+                        </div>
+                        <span class="font-extrabold text-red-600 text-xs">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+        }
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                let code = this.value.trim();
+                if (code) {
+                    addToCart(code);
+                    this.value = '';
+                }
+            }
+        });
+
+        function addToCart(id) {
+            const p = products.find(x => String(x.Barcode) === String(id));
+            if (!p) {
+                alert(`Barang dengan Barcode "${id}" tidak ditemukan di database!`);
+                searchInput.focus();
+                return;
+            }
+            if (p.Stok <= 0) {
+                alert(`Stok ${p["Nama Barang"]} sudah habis!`);
+                searchInput.focus();
+                return;
+            }
+
+            let item = cart.find(x => String(x.Barcode) === String(id));
+            if (item) {
+                if (item.qty < p.Stok) item.qty++;
+                else alert('Stok tidak mencukupi!');
+            } else {
+                cart.push({ ...p, qty: 1, diskon: 0 });
+            }
+            renderCart();
+            searchInput.focus();
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const badge = document.getElementById('cart-count');
+            container.innerHTML = '';
+            let totalQty = 0;
+            let subtotal = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-24 text-slate-400">
+                        <i class="fa-solid fa-cart-arrow-down text-5xl mb-3 text-slate-300"></i>
+                        <p class="font-bold text-base">Keranjang belanja masih kosong.</p>
+                        <p class="text-xs mt-1">Silakan tembak barcode produk menggunakan alat scanner inframerah.</p>
+                    </div>
+                `;
+                badge.innerText = `0 Item`;
+                document.getElementById('display-total').innerText = `Rp 0`;
+                document.getElementById('display-cash').innerText = `Rp 0`;
+                document.getElementById('display-change').innerText = `Rp 0`;
+                syncCustomerDisplay([], 0, 0, 0);
+                return;
+            }
+
+            cart.forEach((item, idx) => {
+                totalQty += item.qty;
+                let hargaReal = Number(item["Harga Jual"]) - (item.diskon || 0);
+                subtotal += hargaReal * item.qty;
+
+                container.innerHTML += `
+                    <div class="py-3 flex justify-between items-center text-sm">
+                        <div class="flex-1 pr-4">
+                            <h4 class="font-extrabold text-slate-800 text-sm">${item["Nama Barang"]}</h4>
+                            <span class="text-xs text-slate-400">Rp ${Number(item["Harga Jual"]).toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="font-extrabold text-red-600 text-base">Rp ${(hargaReal * item.qty).toLocaleString('id-ID')}</span>
+                            <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
+                                <button onclick="changeQty(${idx}, -1)" class="px-3 py-1 hover:bg-slate-200 text-sm font-bold cursor-pointer">-</button>
+                                <span class="px-3 text-sm font-bold">${item.qty}</span>
+                                <button onclick="changeQty(${idx}, 1)" class="px-3 py-1 hover:bg-slate-200 text-sm font-bold cursor-pointer">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            badge.innerText = `${totalQty} Item`;
+            calculatePayment(subtotal);
+        }
+
+        function changeQty(idx, delta) {
+            cart[idx].qty += delta;
+            if (cart[idx].qty <= 0) cart.splice(idx, 1);
+            renderCart();
+        }
+
+        function pressNumpad(val) {
+            if (val === 'C') numpadValue = "0";
+            else if (val === 'DEL') numpadValue = numpadValue.length > 1 ? numpadValue.slice(0, -1) : "0";
+            else if (val === '50000' || val === '100000') numpadValue = val;
+            else numpadValue = numpadValue === "0" ? val : numpadValue + val;
+            
+            document.getElementById('numpad-display').innerText = parseInt(numpadValue).toLocaleString('id-ID');
+            let subtotal = cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0);
+            calculatePayment(subtotal);
+        }
+
+        function calculatePayment(subtotal) {
+            let cash = parseInt(numpadValue) || 0;
+            let change = cash - subtotal;
+            document.getElementById('display-total').innerText = `Rp ${subtotal.toLocaleString('id-ID')}`;
+            document.getElementById('display-cash').innerText = `Rp ${cash.toLocaleString('id-ID')}`;
+            const changeEl = document.getElementById('display-change');
+            
+            if (change >= 0) {
+                changeEl.innerText = `Rp ${change.toLocaleString('id-ID')}`;
+                changeEl.className = "text-emerald-600 font-extrabold";
+            } else {
+                changeEl.innerText = `Kurang Rp ${Math.abs(change).toLocaleString('id-ID')}`;
+                changeEl.className = "text-red-600 font-extrabold";
+            }
+
+            syncCustomerDisplay(cart, subtotal, cash, change);
+        }
+
+        async function checkout() {
+            if (cart.length === 0) return alert('Keranjang kosong!');
+            
+            if(document.activeElement) {
+                document.activeElement.blur();
+            }
+
+            let subtotal = cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0);
+            let cash = parseInt(numpadValue) || 0;
+            if (cash < subtotal) {
+                alert('Uang pembayaran kurang!');
+                searchInput.focus();
+                return;
+            }
+
+            let change = cash - subtotal;
+            let currentCart = [...cart];
+
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "checkout", items: currentCart.map(i => ({ id: i.Barcode, qty: i.qty })) })
+                });
+            } catch (e) {
+                console.warn("Sinkronisasi cloud tertunda, transaksi diproses lokal.");
+            }
+
+            executeRawBTIntentPrint(currentCart, subtotal, cash, change);
+
+            cart = [];
+            numpadValue = "0";
+            document.getElementById('numpad-display').innerText = "0";
+            loadProducts();
+            renderCart();
+            
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+        }
+
+        function executeRawBTIntentPrint(items, subtotal, cash, change) {
+            let trxId = "805-" + Math.floor(100000 + Math.random() * 900000);
+            let now = new Date();
+            let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            let cashierName = activeUser.nama_lengkap;
+
+            let textData = "        805 MART\n";
+            textData += " Ruko Amethys A568 Kompleks\n";
+            textData += " Kawanua Emerald City Manado\n";
+            textData += "--------------------------------\n";
+            textData += `No. Nota : ${trxId}\n`;
+            textData += `Waktu   : ${dateStr}\n`;
+            textData += `Kasir   : ${cashierName}\n`;
+            textData += "--------------------------------\n";
+
+            items.forEach(i => {
+                let hargaAsli = Number(i["Harga Jual"]);
+                let diskon = i.diskon || 0;
+                let hargaReal = hargaAsli - diskon;
+                let totalItem = hargaReal * i.qty;
+
+                textData += `${i["Nama Barang"]}\n`;
+                textData += `${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}\n`;
+                if (diskon > 0) {
+                    textData += `(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})\n`;
+                }
+            });
+
+            textData += "--------------------------------\n";
+            textData += `Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}\n`;
+            textData += `Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}\n`;
+            textData += `KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}\n`;
+            textData += "--------------------------------\n";
+            textData += "       TERIMA KASIH\n";
+            textData += "   Silakan Datang Kembali\n";
+            textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
+
+            let ESC = "\x1B";
+            let cashDrawerCommand = ESC + "p" + String.fromCharCode(0) + String.fromCharCode(25) + String.fromCharCode(250);
+            let autoCutCommand = ESC + "m" + "\x1D" + "V" + "\x41" + "\x00";
+
+            let finalPrintPayload = textData + cashDrawerCommand + autoCutCommand;
+
+            try {
+                let intentUrl = "intent:" + encodeURI(finalPrintPayload) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+                let printLink = document.createElement('a');
+                printLink.href = intentUrl;
+                printLink.style.display = 'none';
+                document.body.appendChild(printLink);
+                printLink.click();
+                document.body.removeChild(printLink);
+            } catch(err) {
+                console.log("Intent RawBT gagal:", err);
+            }
+        }
+
+        function syncCustomerDisplay(items, total, cash, change) {
+            let displayData = { items, total, cash, change };
+            localStorage.setItem('ritel_live_display', JSON.stringify(displayData));
+        }
+
+        function openCustomerDisplayTab() {
+            window.open('customer.html', '_blank');
+        }
+
+        loadProducts();
     </script>
 </body>
 </html>
