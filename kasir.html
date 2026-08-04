@@ -9,8 +9,16 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* Pengaturan khusus cetak thermal agar struk rapi dan tidak mencetak halaman web utama */
+        @media print {
+            body * { visibility: hidden; }
+            #print-receipt-area, #print-receipt-area * { visibility: visible; }
+            #print-receipt-area { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
     <script>
+        // Validasi Sesi Aman
         let activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             activeUser = { nama_lengkap: "Kasir Utama", role: "Kasir" };
@@ -29,7 +37,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (RawBT Direct Ready)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Blueprint POS Ready)</p>
             </div>
         </div>
 
@@ -77,12 +85,12 @@
                 </div>
 
                 <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-base flex justify-center items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-wallet text-lg"></i> Selesaikan Transaksi & Cetak
+                    <i class="fa-solid fa-wallet text-lg"></i> Selesaikan Transaksi & Cetak Otomatis
                 </button>
 
-                <!-- Tombol Cetak Manual / Trigger Langsung ke RawBT -->
+                <!-- Tombol Cetak Manual Cadangan -->
                 <button onclick="triggerRawBTPrint()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-2.5 rounded-xl font-bold text-xs transition flex justify-center items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-print"></i> Cetak Struk Terakhir / Tes Printer RawBT
+                    <i class="fa-solid fa-print"></i> Cetak Ulang Struk Terakhir / Tes Printer
                 </button>
             </div>
         </div>
@@ -137,7 +145,11 @@
         </div>
     </main>
 
+    <!-- Area Struk Tersembunyi untuk Print Service -->
+    <div id="print-receipt-area" style="display: none;"></div>
+
     <script>
+        // Ganti URL di bawah dengan Web App URL dari Google Apps Script Anda
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         let products = [];
@@ -345,7 +357,7 @@
 
             let change = cash - subtotal;
 
-            // Simpan data transaksi ke memori untuk opsi cetak manual
+            // Simpan data untuk cetak
             lastTransactionData = { cart: [...cart], subtotal, cash, change };
 
             try {
@@ -357,10 +369,10 @@
                 console.warn("Sinkronisasi cloud tertunda.");
             }
 
-            // Panggil fungsi cetak langsung ke RawBT
+            // Eksekusi cetak otomatis via window.print()
             triggerRawBTPrint();
 
-            // Reset keranjang instan tanpa stuck
+            // Reset instan
             cart = [];
             numpadValue = "0";
             document.getElementById('numpad-display').innerText = "0";
@@ -385,14 +397,18 @@
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             let cashierName = activeUser.nama_lengkap;
 
-            let textData = "      RITEL EXPRESS\n";
-            textData += "  Jl. Raya Perbelanjaan Utama\n";
-            textData += "      Telp: 081234567890\n";
-            textData += "--------------------------------\n";
-            textData += `No. Nota : ${trxId}\n`;
-            textData += `Waktu   : ${dateStr}\n`;
-            textData += `Kasir   : ${cashierName}\n`;
-            textData += "--------------------------------\n";
+            let printContainer = document.getElementById('print-receipt-area');
+            let htmlContent = `
+                <div style="width: 270px; font-family: monospace; font-size: 11px; padding: 5px; color: #000; line-height: 1.2;">
+                    <div style="text-align: center; font-weight: bold; font-size: 13px;">RITEL EXPRESS</div>
+                    <div style="text-align: center;">Jl. Raya Perbelanjaan Utama</div>
+                    <div style="text-align: center;">Telp: 081234567890</div>
+                    <div>--------------------------------</div>
+                    <div>No. Nota : ${trxId}</div>
+                    <div>Waktu   : ${dateStr}</div>
+                    <div>Kasir   : ${cashierName}</div>
+                    <div>--------------------------------</div>
+            `;
 
             targetCart.forEach(i => {
                 let hargaAsli = Number(i["Harga Jual"]);
@@ -400,34 +416,29 @@
                 let hargaReal = hargaAsli - diskon;
                 let totalItem = hargaReal * i.qty;
 
-                textData += `${i["Nama Barang"]}\n`;
-                textData += `${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}\n`;
+                htmlContent += `
+                    <div style="font-weight: bold;">${i["Nama Barang"]}</div>
+                    <div>${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}</div>
+                `;
                 if (diskon > 0) {
-                    textData += `(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})\n`;
+                    htmlContent += `<div>(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})</div>`;
                 }
             });
 
-            textData += "--------------------------------\n";
-            textData += `Total Belanja : Rp ${targetSubtotal.toLocaleString('id-ID')}\n`;
-            textData += `Tunai Dibayar : Rp ${targetCash.toLocaleString('id-ID')}\n`;
-            textData += `KEMBALIAN     : Rp ${targetChange.toLocaleString('id-ID')}\n`;
-            textData += "--------------------------------\n";
-            textData += "       TERIMA KASIH\n";
-            textData += "   Silakan Datang Kembali\n";
-            textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
+            htmlContent += `
+                    <div>--------------------------------</div>
+                    <div>Total Belanja : Rp ${targetSubtotal.toLocaleString('id-ID')}</div>
+                    <div>Tunai Dibayar : Rp ${targetCash.toLocaleString('id-ID')}</div>
+                    <div>KEMBALIAN     : Rp ${targetChange.toLocaleString('id-ID')}</div>
+                    <div>--------------------------------</div>
+                    <div style="text-align: center;">TERIMA KASIH</div>
+                    <div style="text-align: center;">Silakan Datang Kembali</div>
+                    <div style="text-align: center; font-size: 9px;">Barang yg dibeli tdk dapat ditukar</div>
+                </div>
+            `;
 
-            // Mengirim data langsung menggunakan protokol base64 RawBT melalui tautan klik virtual
-            try {
-                let rawbtUrl = "rawbt:data:text/plain;base64," + btoa(unescape(encodeURIComponent(textData)));
-                let printLink = document.createElement('a');
-                printLink.href = rawbtUrl;
-                printLink.style.display = 'none';
-                document.body.appendChild(printLink);
-                printLink.click();
-                document.body.removeChild(printLink);
-            } catch(err) {
-                console.log("Gagal mencetak otomatis:", err);
-            }
+            printContainer.innerHTML = htmlContent;
+            window.print();
         }
 
         let customerWindow = null;
