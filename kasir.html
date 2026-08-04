@@ -26,7 +26,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (POS Utama)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Direct Print & Control Keyboard)</p>
             </div>
         </div>
 
@@ -74,22 +74,32 @@
                 </div>
 
                 <button onclick="checkout()" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-lg flex justify-center items-center gap-3 cursor-pointer">
-                    <i class="fa-solid fa-wallet text-xl"></i> Selesaikan Transaksi & Cetak Struk
+                    <i class="fa-solid fa-wallet text-xl"></i> Selesaikan Transaksi & Cetak Otomatis
                 </button>
             </div>
         </div>
 
-        <!-- KOLOM KANAN: SCANNER INFRAMERAH, KALKULATOR, & KATALOG RINGKAS -->
+        <!-- KOLOM KANAN: SCANNER, KONTROL KEYBOARD, KALKULATOR, & KATALOG -->
         <div class="w-[38%] flex flex-col gap-4 overflow-hidden">
+            
+            <!-- Target Scanner Barcode dengan Tombol Kontrol Keyboard Virtual -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Target Scanner Inframerah</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase">Target Scanner Barcode</label>
+                    <button onclick="toggleVirtualKeyboard()" id="kbd-toggle-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200">
+                        <i class="fa-solid fa-keyboard"></i> <span id="kbd-status-text">Keyboard: Mati</span>
+                    </button>
+                </div>
                 <div class="relative">
                     <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
-                    <input type="text" id="search-input" placeholder="Tembak Barcode di sini..." 
-                        class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner">
+                    <!-- Input diset readOnly secara default agar keyboard melayang TIDAK muncul otomatis -->
+                    <input type="text" id="search-input" readonly placeholder="Tembak Barcode di sini..." 
+                        class="w-full bg-slate-50 pl-12 pr-4 py-3 rounded-2xl border-2 border-red-500 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm font-bold shadow-inner cursor-pointer">
                 </div>
+                <p class="text-[10px] text-slate-400 mt-1 ml-1">*Klik tombol "Keyboard" di atas jika ingin mengetik manual.</p>
             </div>
 
+            <!-- Keypad Kalkulator Pembayaran -->
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm shrink-0">
                 <div class="flex justify-between items-center text-xs text-slate-500 px-1 mb-2 font-bold">
                     <span>Nominal Pembayaran</span>
@@ -114,6 +124,7 @@
                 </div>
             </div>
 
+            <!-- Katalog Cepat -->
             <div class="flex-1 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
                 <h3 class="font-bold text-slate-700 text-xs uppercase mb-2">Katalog Cepat Produk</h3>
                 <div id="product-grid" class="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -124,7 +135,7 @@
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxVqtDJtiTrk3_ltRbfinTOYHZO6S2PWs04X0FmLZ7sCzgCn9cMsPqTmjrXFCxQvAVR/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         let products = [];
         let cart = [];
@@ -145,6 +156,24 @@
         function goHome() {
             if (activeUser.role === 'Admin') window.location.href = 'admin.html';
             else window.location.href = 'index.html';
+        }
+
+        // Fungsionalitas Tombol Kontrol Keyboard Virtual (Agar tidak muncul otomatis)
+        function toggleVirtualKeyboard() {
+            const btnText = document.getElementById('kbd-status-text');
+            const btnEl = document.getElementById('kbd-toggle-btn');
+            
+            if (searchInput.hasAttribute('readonly')) {
+                searchInput.removeAttribute('readonly');
+                searchInput.focus();
+                btnText.innerText = "Keyboard: Aktif";
+                btnEl.className = "bg-red-50 text-red-600 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-red-200";
+            } else {
+                searchInput.setAttribute('readonly', 'true');
+                searchInput.blur();
+                btnText.innerText = "Keyboard: Mati";
+                btnEl.className = "bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 cursor-pointer border border-slate-200";
+            }
         }
 
         async function loadProducts() {
@@ -296,10 +325,10 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
+        // Proses Checkout Tanpa Muncul Struk di Layar (Direct Thermal Print via Intent RawBT)
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
-            // HILANGKAN FOKUS AGAR VIRTUAL KEYBOARD OTOMATIS TERTUTUP
             if(document.activeElement) {
                 document.activeElement.blur();
             }
@@ -321,18 +350,10 @@
                 });
             } catch (e) {}
 
-            let triggerDrawer = confirm(
-                `TRANSAKSI BERHASIL!\n\n` +
-                `Total Belanja: Rp ${subtotal.toLocaleString('id-ID')}\n` +
-                `Uang Dibayar: Rp ${cash.toLocaleString('id-ID')}\n` +
-                `Kembalian: Rp ${change.toLocaleString('id-ID')}\n\n` +
-                `[ 🗄️ CASH DRAWER ] Klik OK untuk mencetak struk.`
-            );
+            // EKSEKUSI CETAK LANGSUNG KE PRINTER THERMAL (TANPA STUCK DI LAYAR)
+            executeDirectThermalPrint(subtotal, cash, change);
 
-            if (triggerDrawer) {
-                printReceipt(subtotal, cash, change);
-            }
-
+            // Reset instan
             cart = [];
             numpadValue = "0";
             document.getElementById('numpad-display').innerText = "0";
@@ -344,95 +365,45 @@
             }, 300);
         }
 
-        function printReceipt(subtotal, cash, change) {
+        function executeDirectThermalPrint(subtotal, cash, change) {
             let trxId = "RX-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
             let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
             let cashierName = activeUser.nama_lengkap;
 
-            let itemsHtml = '';
+            let textData = "      RITEL EXPRESS\n";
+            textData += "  Jl. Raya Perbelanjaan Utama\n";
+            textData += "      Telp: 081234567890\n";
+            textData += "--------------------------------\n";
+            textData += `No. Nota : ${trxId}\n`;
+            textData += `Waktu   : ${dateStr}\n`;
+            textData += `Kasir   : ${cashierName}\n`;
+            textData += "--------------------------------\n";
+
             cart.forEach(i => {
                 let hargaAsli = Number(i["Harga Jual"]);
                 let diskon = i.diskon || 0;
                 let hargaReal = hargaAsli - diskon;
                 let totalItem = hargaReal * i.qty;
 
-                itemsHtml += `
-                    <div style="margin-bottom: 5px;">
-                        <div><b>${i["Nama Barang"]}</b></div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>${i.qty} x ${hargaAsli.toLocaleString('id-ID')}</span>
-                            <span>Rp ${totalItem.toLocaleString('id-ID')}</span>
-                        </div>
-                `;
+                textData += `${i["Nama Barang"]}\n`;
+                textData += `${i.qty} x ${hargaAsli.toLocaleString('id-ID')} = Rp ${totalItem.toLocaleString('id-ID')}\n`;
                 if (diskon > 0) {
-                    itemsHtml += `<div style="font-size: 9px; color: #333;">Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')}</div>`;
+                    textData += `(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})\n`;
                 }
-                itemsHtml += `</div>`;
             });
 
-            let receiptWindow = window.open('', '_blank', 'width=350,height=600');
-            receiptWindow.document.write(`
-                <!DOCTYPE html>
-                <html lang="id">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Struk Belanja - Ritel Express</title>
-                    <style>
-                        body {
-                            font-family: 'Courier New', Courier, monospace;
-                            font-size: 11px;
-                            line-height: 1.2;
-                            color: #000;
-                            background: #fff;
-                            width: 58mm;
-                            margin: 0 auto;
-                            padding: 5px;
-                        }
-                        .center { text-align: center; }
-                        .line { border-top: 1px dashed #000; margin: 6px 0; }
-                        .flex { display: flex; justify-content: space-between; }
-                        .bold { font-weight: bold; }
-                    </style>
-                </head>
-                <body onload="window.print(); window.close();">
-                    <div class="center bold" style="font-size: 13px;">RITEL EXPRESS</div>
-                    <div class="center" style="font-size: 10px;">Jl. Raya Perbelanjaan Utama No. 88</div>
-                    <div class="center" style="font-size: 10px;">Telp: 0812-3456-7890</div>
-                    
-                    <div class="line"></div>
-                    
-                    <div style="font-size: 10px;">
-                        <div>No. Nota : ${trxId}</div>
-                        <div>Waktu   : ${dateStr}</div>
-                        <div>Kasir   : ${cashierName}</div>
-                    </div>
-                    
-                    <div class="line"></div>
-                    
-                    <div style="font-size: 10px;">
-                        ${itemsHtml}
-                    </div>
-                    
-                    <div class="line"></div>
-                    
-                    <div style="font-size: 10px;">
-                        <div class="flex"><span>Total Belanja</span> <span>Rp ${subtotal.toLocaleString('id-ID')}</span></div>
-                        <div class="flex"><span>Tunai Dibayar</span> <span>Rp ${cash.toLocaleString('id-ID')}</span></div>
-                        <div class="flex bold" style="font-size: 11px; margin-top: 3px;"><span>KEMBALIAN</span> <span>Rp ${change.toLocaleString('id-ID')}</span></div>
-                    </div>
-                    
-                    <div class="line"></div>
-                    
-                    <div class="center" style="font-size: 10px; margin-top: 8px;">
-                        <div class="bold">TERIMA KASIH</div>
-                        <div>Silakan Datang Kembali</div>
-                        <div style="margin-top: 4px; font-size: 8px;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</div>
-                    </div>
-                </body>
-                </html>
-            `);
-            receiptWindow.document.close();
+            textData += "--------------------------------\n";
+            textData += `Total Belanja : Rp ${subtotal.toLocaleString('id-ID')}\n`;
+            textData += `Tunai Dibayar : Rp ${cash.toLocaleString('id-ID')}\n`;
+            textData += `KEMBALIAN     : Rp ${change.toLocaleString('id-ID')}\n`;
+            textData += "--------------------------------\n";
+            textData += "       TERIMA KASIH\n";
+            textData += "   Silakan Datang Kembali\n";
+            textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
+
+            var rawBTUrl = "intent:data:text/plain;charset=utf-8," + encodeURIComponent(textData) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+            window.location.href = rawBTUrl;
         }
 
         let customerWindow = null;
