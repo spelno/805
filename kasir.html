@@ -11,7 +11,7 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
     <script>
-        // Validasi Sesi Aman (Jika belum ada sesi, buat sesi dummy Kasir agar tidak terpental error)
+        // Validasi Sesi Aman
         let activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
         if (!activeUser) {
             activeUser = { nama_lengkap: "Kasir Utama", role: "Kasir" };
@@ -330,7 +330,7 @@
             syncCustomerDisplay(cart, subtotal, cash, change);
         }
 
-        // Proses Checkout Sempurna, Aman, & Bebas Error saat Klik Bayar
+        // Proses Checkout Aman & Bebas Error (Potong Stok GAS & Cetak Thermal Otomatis via RawBT Intent)
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
             
@@ -357,7 +357,7 @@
                 console.warn("Sinkronisasi cloud tertunda, transaksi diproses lokal.");
             }
 
-            // EKSEKUSI CETAK THERMAL LANGSUNG KE PRINTER BLUEPRINT (RAWBT)
+            // EKSEKUSI CETAK THERMAL LANGSUNG KE PRINTER BLUEPRINT (RAWBT INTENT)
             executeDirectThermalPrint(subtotal, cash, change);
 
             // Reset instan tanpa error
@@ -409,16 +409,17 @@
             textData += "   Silakan Datang Kembali\n";
             textData += "Barang yg dibeli tdk dapat ditukar\n\n\n";
 
+            // Format Intent Resmi RawBT (Bebas Error Unknown URL Scheme)
             try {
-                let rawBTUrl = "rawbt:data:text/plain;charset=utf-8," + encodeURIComponent(textData);
+                let intentUrl = "intent:" + encodeURI(textData) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
                 let printLink = document.createElement('a');
-                printLink.href = rawBTUrl;
+                printLink.href = intentUrl;
                 printLink.style.display = 'none';
                 document.body.appendChild(printLink);
                 printLink.click();
                 document.body.removeChild(printLink);
             } catch(err) {
-                console.log("Cetak langsung dilewati:", err);
+                console.log("Cetak langsung dialihkan:", err);
             }
         }
 
