@@ -3,63 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Ritel Express</title>
+    <title>Panel Admin - 805 Mart Manado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
-    <script>
-        // --- PENGAMAN SESI (SECURITY GUARD) ---
-        const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
-        if (!activeUser) {
-            alert("Akses ditolak! Silakan login terlebih dahulu.");
-            window.location.href = 'index.html';
-        } else if (activeUser.role !== 'Admin') {
-            alert("Anda tidak memiliki hak akses sebagai Admin!");
-            window.location.href = 'index.html';
-        }
-    </script>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col items-center justify-center p-6 antialiased">
-
-    <div class="max-w-3xl w-full bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 text-center">
-        <div class="w-16 h-16 bg-red-600 text-white rounded-2xl mx-auto flex items-center justify-center text-2xl font-extrabold shadow-lg shadow-red-200 mb-4">
-            <i class="fa-solid fa-user-shield"></i>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+    
+    <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-red-600 text-white p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide">PANEL ADMIN 805 MART</h1>
+                <p class="text-xs text-slate-400">Manajemen Inventaris & Stok Produk</p>
+            </div>
         </div>
-        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">PUSAT KONTROL ADMIN</h1>
-        <p class="text-slate-500 text-sm mt-1 mb-8">Selamat datang, <span id="admin-name" class="font-bold text-slate-800">Admin</span>. Pilih modul operasional yang ingin Anda akses:</p>
-
-        <div class="grid grid-cols-3 gap-4">
-            <a href="kasir.html" class="p-6 bg-red-50 hover:bg-red-100 text-red-700 rounded-2xl border border-red-100 transition flex flex-col items-center group">
-                <i class="fa-solid fa-cash-register text-3xl mb-3 group-hover:scale-110 transition"></i>
-                <span class="font-bold text-sm">Buka Kasir (POS)</span>
-                <span class="text-xs text-red-500 mt-1">Layani transaksi</span>
+        <div class="flex items-center gap-3">
+            <a href="kasir.html" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                <i class="fa-solid fa-cash-register"></i> Buka Kasir POS
             </a>
-            <a href="inventory.html" class="p-6 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-2xl border border-amber-100 transition flex flex-col items-center group">
-                <i class="fa-solid fa-boxes-stacked text-3xl mb-3 group-hover:scale-110 transition"></i>
-                <span class="font-bold text-sm">Stok Gudang</span>
-                <span class="text-xs text-amber-600 mt-1">Kelola barang & restock</span>
-            </a>
-            <a href="owner.html" class="p-6 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl border border-emerald-100 transition flex flex-col items-center group">
-                <i class="fa-solid fa-chart-line text-3xl mb-3 group-hover:scale-110 transition"></i>
-                <span class="font-bold text-sm">Dashboard Owner</span>
-                <span class="text-xs text-emerald-600 mt-1">Valuasi aset & laporan</span>
-            </a>
+            <button onclick="logout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
         </div>
+    </header>
 
-        <div class="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-            <span>Sistem Ritel Express Terintegrasi Cloud</span>
-            <button onclick="logout()" class="text-red-600 font-bold hover:underline">Keluar Akun</button>
+    <main class="flex-1 p-6 overflow-y-auto">
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-5xl mx-auto space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="font-extrabold text-lg text-slate-800">Daftar Inventaris Produk</h2>
+                <button onclick="loadAdminProducts()" class="bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition">
+                    <i class="fa-solid fa-rotate"></i> Muat Ulang
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
+                        <tr>
+                            <th class="p-3">Barcode</th>
+                            <th class="p-3">Nama Barang</th>
+                            <th class="p-3">Harga Jual</th>
+                            <th class="p-3">Stok Tersedia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-product-list" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="text-center py-6 text-slate-400">Menghubungkan ke Google Sheets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        document.getElementById('admin-name').innerText = activeUser.nama_lengkap;
+        const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
+
+        window.onload = () => { loadAdminProducts(); };
+
         function logout() {
             localStorage.removeItem('ritel_active_user');
-            window.location.href = 'login.html';
+            window.location.href = 'index.html';
+        }
+
+        async function loadAdminProducts() {
+            try {
+                let res = await fetch(`${API_URL}?action=getProducts`);
+                let data = await res.json();
+                const tbody = document.getElementById('admin-product-list');
+                tbody.innerHTML = '';
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
+                    return;
+                }
+                data.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-mono font-bold text-slate-600">${p.Barcode}</td>
+                            <td class="p-3 font-bold text-slate-800">${p["Nama Barang"]}</td>
+                            <td class="p-3 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
+                            <td class="p-3 font-bold text-slate-700">${p.Stok} Unit</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) {
+                document.getElementById('admin-product-list').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Gagal memuat data dari Google Sheets. Periksa URL GAS.</td></tr>`;
+            }
         }
     </script>
 </body>
