@@ -10,23 +10,27 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        /* PENGATURAN KHUSUS CETAK STRUK KASIR (THERMAL PRINTER 58mm / 80mm) */
+        /* PENGATURAN MUTLAK CSS PRINT THERMAL */
         @media print {
             body * {
-                visibility: hidden;
+                visibility: hidden !important;
             }
-            #receipt-print-area, #receipt-print-area * {
-                visibility: visible;
+            #thermal-receipt, #thermal-receipt * {
+                visibility: visible !important;
             }
-            #receipt-print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                font-family: 'Courier New', Courier, monospace;
-                color: #000;
-                background: #fff;
-                padding: 10px;
+            #thermal-receipt {
+                display: block !important;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 58mm !important; /* Standar printer thermal kecil (bisa otomatis menyesuaikan 80mm) */
+                font-family: 'Courier New', Courier, monospace !important;
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                color: #000 !important;
+                background: #fff !important;
+                padding: 4mm !important;
+                margin: 0 !important;
             }
         }
     </style>
@@ -46,7 +50,7 @@
             <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-cash-register"></i></div>
             <div>
                 <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Cloud Sync + Struk)</p>
+                <p class="text-xs text-red-100 font-medium">Terminal Kasir (Thermal Receipt Ready)</p>
             </div>
         </div>
 
@@ -143,33 +147,49 @@
         </div>
     </main>
 
-    <!-- AREA TERSEMBUNYI KHUSUS CETAK STRUK THERMAL -->
-    <div id="receipt-print-area" class="hidden">
-        <div style="text-align: center; margin-bottom: 10px;">
-            <h3 style="font-size: 16px; font-weight: bold; margin: 0;">RITEL EXPRESS</h3>
-            <p style="font-size: 11px; margin: 2px 0;">Jl. Raya Pusat Perbelanjaan No. 88</p>
-            <p style="font-size: 11px; margin: 2px 0;">Telp: 0812-3456-7890</p>
+    <!-- STRUK THERMAL KHUSUS CETAK (HIDDEN DI LAYAR BIASA, MUNCUL SAAT PRINT) -->
+    <div id="thermal-receipt" style="display: none;">
+        <div style="text-align: center; font-weight: bold; font-size: 13px; margin-bottom: 2px;">RITEL EXPRESS</div>
+        <div style="text-align: center; font-size: 10px; margin-bottom: 2px;">Jl. Raya Perbelanjaan Utama No. 88</div>
+        <div style="text-align: center; font-size: 10px; margin-bottom: 6px;">Telp: 0812-3456-7890</div>
+        
+        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+        <div style="font-size: 10px; margin-bottom: 6px;">
+            <div>No. Nota : <span id="rcpt-trx-id">RX-9982</span></div>
+            <div>Waktu   : <span id="rcpt-date">04/08/2026 18:55</span></div>
+            <div>Kasir   : <span id="rcpt-cashier">Kasir</span></div>
         </div>
-        <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
-        <div style="font-size: 11px; margin-bottom: 8px;">
-            <div>No. Transaksi: <span id="rcpt-trx-id">RX-1001</span></div>
-            <div>Tanggal: <span id="rcpt-date">04/08/2026 18:49</span></div>
-            <div>Kasir: <span id="rcpt-cashier">Kasir</span></div>
+        
+        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+        <div id="rcpt-items-container" style="font-size: 10px; margin-bottom: 6px;">
+            <!-- Rincian Item & Diskon Ditempatkan Di Sini -->
         </div>
-        <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
-        <div id="rcpt-items-list" style="font-size: 11px; margin-bottom: 8px;">
-            <!-- Rincian Item Struk -->
+        
+        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+        <div style="font-size: 10px; margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Total Belanja</span>
+                <span id="rcpt-subtotal">Rp 0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Tunai Dibayar</span>
+                <span id="rcpt-cash">Rp 0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; margin-top: 2px;">
+                <span>KEMBALIAN</span>
+                <span id="rcpt-change">Rp 0</span>
+            </div>
         </div>
-        <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
-        <div style="font-size: 11px; space-y: 2px;">
-            <div style="display: flex; justify-content: space-between;"><span>Total Belanja:</span> <span id="rcpt-subtotal">Rp 0</span></div>
-            <div style="display: flex; justify-content: space-between;"><span>Tunai Dibayar:</span> <span id="rcpt-cash">Rp 0</span></div>
-            <div style="display: flex; justify-content: space-between; font-weight: bold; margin-top: 4px;"><span>Kembalian:</span> <span id="rcpt-change">Rp 0</span></div>
-        </div>
-        <div style="border-bottom: 1px dashed #000; margin: 8px 0;"></div>
-        <div style="text-align: center; font-size: 10px; margin-top: 10px;">
-            <p style="margin: 2px 0;">TERIMA KASIH ATAS KUNJUNGAN ANDA</p>
-            <p style="margin: 2px 0;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</p>
+        
+        <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+        
+        <div style="text-align: center; font-size: 10px; margin-top: 8px;">
+            <div style="font-weight: bold;">TERIMA KASIH</div>
+            <div>Silakan Datang Kembali</div>
+            <div style="margin-top: 4px; font-size: 9px; color: #444;">Barang yang sudah dibeli tidak dapat ditukar/dikembalikan.</div>
         </div>
     </div>
 
@@ -256,7 +276,7 @@
                 if (item.qty < p.Stok) item.qty++;
                 else alert('Stok tidak mencukupi!');
             } else {
-                cart.push({ ...p, qty: 1 });
+                cart.push({ ...p, qty: 1, diskon: 0 }); // Dukungan properti diskon per item
             }
             renderCart();
             searchInput.focus();
@@ -287,15 +307,17 @@
 
             cart.forEach((item, idx) => {
                 totalQty += item.qty;
-                subtotal += Number(item["Harga Jual"]) * item.qty;
+                let hargaReal = Number(item["Harga Jual"]) - (item.diskon || 0);
+                subtotal += hargaReal * item.qty;
+
                 container.innerHTML += `
                     <div class="py-3 flex justify-between items-center text-sm">
                         <div class="flex-1 pr-4">
                             <h4 class="font-extrabold text-slate-800 text-sm">${item["Nama Barang"]}</h4>
-                            <span class="text-xs text-slate-400">Harga satuan: Rp ${Number(item["Harga Jual"]).toLocaleString('id-ID')}</span>
+                            <span class="text-xs text-slate-400">Rp ${Number(item["Harga Jual"]).toLocaleString('id-ID')} ${item.diskon > fnGetZero() ? `<span class="text-emerald-600 font-bold ml-1">(-Rp ${item.diskon.toLocaleString('id-ID')})</span>` : ''}</span>
                         </div>
                         <div class="flex items-center gap-4">
-                            <span class="font-extrabold text-red-600 text-base">Rp ${(Number(item["Harga Jual"]) * item.qty).toLocaleString('id-ID')}</span>
+                            <span class="font-extrabold text-red-600 text-base">Rp ${(hargaReal * item.qty).toLocaleString('id-ID')}</span>
                             <div class="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
                                 <button onclick="changeQty(${idx}, -1)" class="px-3 py-1 hover:bg-slate-200 text-sm font-bold cursor-pointer">-</button>
                                 <span class="px-3 text-sm font-bold">${item.qty}</span>
@@ -308,6 +330,8 @@
             badge.innerText = `${totalQty} Item`;
             calculatePayment(subtotal);
         }
+
+        function fnGetZero() { return 0; }
 
         function changeQty(idx, delta) {
             cart[idx].qty += delta;
@@ -322,7 +346,7 @@
             else numpadValue = numpadValue === "0" ? val : numpadValue + val;
             
             document.getElementById('numpad-display').innerText = parseInt(numpadValue).toLocaleString('id-ID');
-            let subtotal = cart.reduce((sum, i) => sum + (Number(i["Harga Jual"]) * i.qty), 0);
+            let subtotal = cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0);
             calculatePayment(subtotal);
         }
 
@@ -346,7 +370,7 @@
 
         async function checkout() {
             if (cart.length === 0) return alert('Keranjang kosong!');
-            let subtotal = cart.reduce((sum, i) => sum + (Number(i["Harga Jual"]) * i.qty), 0);
+            let subtotal = cart.reduce((sum, i) => sum + ((Number(i["Harga Jual"]) - (i.diskon || 0)) * i.qty), 0);
             let cash = parseInt(numpadValue) || 0;
             if (cash < subtotal) return alert('Uang pembayaran kurang!');
 
@@ -359,15 +383,15 @@
                 });
             } catch (e) {}
 
-            // PERSIAPAN DATA STRUK CETAK
-            prepareReceipt(subtotal, cash, change);
+            // SIAPKAN STRUK THERMAL
+            buildThermalReceipt(subtotal, cash, change);
 
             let triggerDrawer = confirm(
                 `TRANSAKSI BERHASIL!\n\n` +
                 `Total Belanja: Rp ${subtotal.toLocaleString('id-ID')}\n` +
                 `Uang Dibayar: Rp ${cash.toLocaleString('id-ID')}\n` +
                 `Kembalian: Rp ${change.toLocaleString('id-ID')}\n\n` +
-                `[ 🗄️ CASH DRAWER ] Klik OK untuk buka laci & cetak struk belanja.`
+                `[ 🗄️ CASH DRAWER ] Klik OK untuk mencetak struk.`
             );
 
             if (triggerDrawer) {
@@ -382,7 +406,7 @@
             searchInput.focus();
         }
 
-        function prepareReceipt(subtotal, cash, change) {
+        function buildThermalReceipt(subtotal, cash, change) {
             document.getElementById('rcpt-trx-id').innerText = "RX-" + Math.floor(100000 + Math.random() * 900000);
             
             let now = new Date();
@@ -390,19 +414,27 @@
             document.getElementById('rcpt-date').innerText = dateStr;
             document.getElementById('rcpt-cashier').innerText = activeUser.nama_lengkap;
 
-            let rcptList = document.getElementById('rcpt-items-list');
-            rcptList.innerHTML = '';
+            let rcptContainer = document.getElementById('rcpt-items-container');
+            rcptContainer.innerHTML = '';
+            
             cart.forEach(i => {
-                let itemTotal = Number(i["Harga Jual"]) * i.qty;
-                rcptList.innerHTML += `
-                    <div style="margin-bottom: 4px;">
-                        <div>${i["Nama Barang"]}</div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>${i.qty} x ${Number(i["Harga Jual"]).toLocaleString('id-ID')}</span>
-                            <span>Rp ${itemTotal.toLocaleString('id-ID')}</span>
-                        </div>
-                    </div>
-                `;
+                let hargaAsli = Number(i["Harga Jual"]);
+                let diskon = i.diskon || 0;
+                let hargaReal = hargaAsli - diskon;
+                let totalItem = hargaReal * i.qty;
+
+                let rowHtml = `<div style="margin-bottom: 3px;">
+                    <div>${i["Nama Barang"]}</div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>${i.qty} x ${hargaAsli.toLocaleString('id-ID')}</span>
+                        <span>Rp ${totalItem.toLocaleString('id-ID')}</span>
+                    </div>`;
+                
+                if (diskon > 0) {
+                    rowHtml += `<div style="color: #333; font-size: 9px;">(Diskon: -Rp ${(diskon * i.qty).toLocaleString('id-ID')})</div>`;
+                }
+                rowHtml += `</div>`;
+                rcptContainer.innerHTML += rowHtml;
             });
 
             document.getElementById('rcpt-subtotal').innerText = `Rp ${subtotal.toLocaleString('id-ID')}`;
@@ -458,10 +490,11 @@
             } else {
                 custCart.innerHTML = '';
                 items.forEach(i => {
+                    let hReal = Number(i["Harga Jual"]) - (i.diskon || 0);
                     custCart.innerHTML += `
                         <div class="flex justify-between items-center bg-slate-800/40 px-4 py-3 rounded-2xl border border-slate-800 text-sm">
-                            <div><h4 class="font-bold text-white">${i["Nama Barang"]}</h4><span class="text-xs text-slate-400">Rp ${Number(i["Harga Jual"]).toLocaleString('id-ID')} x ${i.qty}</span></div>
-                            <span class="font-extrabold text-red-400">Rp ${(Number(i["Harga Jual"]) * i.qty).toLocaleString('id-ID')}</span>
+                            <div><h4 class="font-bold text-white">${i["Nama Barang"]}</h4><span class="text-xs text-slate-400">Rp ${hReal.toLocaleString('id-ID')} x ${i.qty}</span></div>
+                            <span class="font-extrabold text-red-400">Rp ${(hReal * i.qty).toLocaleString('id-ID')}</span>
                         </div>
                     `;
                 });
