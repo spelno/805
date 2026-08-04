@@ -65,23 +65,21 @@
     </div>
 
     <script>
-        // URL GAS Terintegrasi
         const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
-        window.onload = () => {
-            let activeUser = localStorage.getItem('ritel_active_user');
-            if (activeUser) {
-                let user = JSON.parse(activeUser);
-                if (user.role === 'Admin') window.location.href = 'admin.html';
-                else if (user.role === 'Owner') window.location.href = 'owner.html';
-                else window.location.href = 'kasir.html';
-            }
-        };
+        // Bersihkan sesi lama saat pertama buka halaman login agar tidak tersangkut
+        localStorage.removeItem('ritel_active_user');
 
         function handleLogin(e) {
             e.preventDefault();
             let userVal = document.getElementById('username').value.trim().toLowerCase();
-            
+            let passVal = document.getElementById('password').value.trim();
+
+            if (!userVal || !passVal) {
+                alert("Username dan PIN/Password wajib diisi!");
+                return;
+            }
+
             let role = "Kasir";
             if (userVal === 'admin') role = "Admin";
             else if (userVal === 'owner') role = "Owner";
@@ -93,9 +91,14 @@
 
             localStorage.setItem('ritel_active_user', JSON.stringify(userData));
 
-            if (role === 'Admin') window.location.href = 'admin.html';
-            else if (role === 'Owner') window.location.href = 'owner.html';
-            else window.location.href = 'kasir.html';
+            // Redirect sesuai role
+            if (role === 'Admin') {
+                window.location.href = 'admin.html';
+            } else if (role === 'Owner') {
+                window.location.href = 'owner.html';
+            } else {
+                window.location.href = 'kasir.html';
+            }
         }
     </script>
 </body>
