@@ -3,185 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Dashboard Owner - Ritel Express</title>
+    <title>Panel Owner - 805 Mart Manado</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
-    <script>
-        const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
-        if (!activeUser || (activeUser.role !== 'Owner' && activeUser.role !== 'Admin')) { window.location.href = 'index.html'; }
-    </script>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
-    <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+    
+    <header class="bg-red-700 text-white shadow-md px-6 py-4 flex justify-between items-center z-10 shrink-0">
         <div class="flex items-center gap-3">
-            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali">
-                <i class="fa-solid fa-house text-sm"></i>
-            </button>
-            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-pie"></i></div>
+            <div class="bg-white text-red-700 p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-line"></i></div>
             <div>
-                <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Pusat Analisis Owner</p>
+                <h1 class="font-bold text-lg tracking-wide">DASHBOARD OWNER 805 MART</h1>
+                <p class="text-xs text-red-100">Laporan Bisnis & Monitoring Toko</p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p id="owner-name" class="text-sm font-bold">Pemilik</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar</button>
-            </div>
-            <div id="owner-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">O</div>
+        <div class="flex items-center gap-3">
+            <a href="kasir.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
+                <i class="fa-solid fa-cash-register"></i> Kasir POS
+            </a>
+            <button onclick="logout()" class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
         </div>
     </header>
 
-    <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
-        <div class="max-w-6xl mx-auto space-y-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ringkasan Eksekutif Bisnis</h2>
-                    <p class="text-sm text-slate-500 font-medium mt-0.5">Valuasi modal dan perputaran aset secara real-time dari Google Sheets.</p>
-                </div>
-                <button onclick="loadOwnerData()" class="bg-white hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-xs shadow-sm border border-slate-200 transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-rotate-right text-red-600"></i> Segarkan Data
-                </button>
-            </div>
-
-            <div class="grid grid-cols-4 gap-5">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Jenis Produk</p>
-                    <h3 id="stat-total-item" class="text-2xl font-extrabold text-slate-800 mt-1.5">0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Valuasi Aset</p>
-                    <h3 id="stat-total-asset" class="text-2xl font-extrabold text-red-600 mt-1.5">Rp 0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Potensi Laba Kotor</p>
-                    <h3 id="stat-potential-profit" class="text-2xl font-extrabold text-emerald-600 mt-1.5">Rp 0</h3>
-                </div>
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status Cloud</p>
-                    <h3 class="text-lg font-extrabold text-emerald-600 mt-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-cloud-circle-check"></i> Sinkron
+    <main class="flex-1 p-6 overflow-y-auto">
+        <div class="max-w-5xl mx-auto space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Status Sistem Cloud</span>
+                    <h3 class="text-xl font-extrabold text-emerald-600 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check"></i> Terhubung ke Google Sheets
                     </h3>
+                </div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Lokasi Usaha</span>
+                    <h3 class="text-base font-extrabold text-slate-700">Ruko Amethys A568 Kawanua Emerald City</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> Barang Kritis (&le; 15 pcs)
-                    </h3>
-                    <div class="flex-1 overflow-y-auto max-h-[280px]">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
-                                    <th class="p-2.5">Nama Barang</th>
-                                    <th class="p-2.5">Kategori</th>
-                                    <th class="p-2.5 text-center">Stok</th>
-                                </tr>
-                            </thead>
-                            <tbody id="low-stock-table" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
-                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-boxes-stacked text-red-600"></i> Aset Bernilai Tinggi
-                    </h3>
-                    <div class="flex-1 overflow-y-auto max-h-[280px]">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
-                                    <th class="p-2.5">Nama Barang</th>
-                                    <th class="p-2.5 text-center">Stok</th>
-                                    <th class="p-2.5 text-right">Valuasi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top-asset-table" class="divide-y divide-slate-100">
-                                <tr><td colspan="3" class="p-4 text-center text-slate-400">Memuat...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="font-extrabold text-lg text-slate-800">Ringkasan Operasional 805 Mart</h2>
+                <p class="text-sm text-slate-500">Semua transaksi penjualan kasir otomatis tercatat langsung ke Google Sheets secara real-time dan transparan.</p>
             </div>
         </div>
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxLl5Ygch8s3Kf6LJ7WdFrCwqYZUkHM4_McZDz0RcWXGFbeUaWo_0_iJpKEoKZJFi54/exec";
-
-        document.getElementById('owner-name').innerText = activeUser.nama_lengkap;
-        document.getElementById('owner-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
+        const API_URL = "https://script.google.com/macros/s/AKfycbykSgKN2EsJIVVk5LlQnkxu_9vsi63sF-NnRHpImVEUfPSil-a_df-5p1iiny0dnOUs/exec";
 
         function logout() {
             localStorage.removeItem('ritel_active_user');
             window.location.href = 'index.html';
         }
-
-        function goHome() {
-            if (activeUser.role === 'Admin') window.location.href = 'admin.html';
-            else window.location.href = 'index.html';
-        }
-
-        async function loadOwnerData() {
-            try {
-                let res = await fetch(`${API_URL}?action=getProducts`);
-                let products = await res.json();
-                processDashboard(products);
-            } catch (err) {
-                processDashboard([]);
-            }
-        }
-
-        function processDashboard(products) {
-            document.getElementById('stat-total-item').innerText = products.length;
-            let totalAsset = products.reduce((sum, p) => sum + (Number(p["Harga Jual"]) * Number(p.Stok)), 0);
-            document.getElementById('stat-total-asset').innerText = `Rp ${totalAsset.toLocaleString('id-ID')}`;
-            let estProfit = totalAsset * 0.20;
-            document.getElementById('stat-potential-profit').innerText = `Rp ${estProfit.toLocaleString('id-ID')}`;
-
-            const lowStockList = products.filter(p => Number(p.Stok) <= 15);
-            const lowStockTbody = document.getElementById('low-stock-table');
-            lowStockTbody.innerHTML = '';
-            if (lowStockList.length === 0) {
-                lowStockTbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-emerald-600 font-medium">Stok aman.</td></tr>`;
-            } else {
-                lowStockList.forEach(p => {
-                    lowStockTbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 border-b border-slate-100">
-                            <td class="p-2.5 font-semibold text-slate-800">${p["Nama Barang"]}</td>
-                            <td class="p-2.5"><span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[10px]">${p.Kategori}</span></td>
-                            <td class="p-2.5 text-center font-extrabold text-red-600 bg-red-50/40 rounded">${p.Stok} pcs</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            let sortedByAsset = [...products].map(p => ({
-                ...p,
-                totalVal: Number(p["Harga Jual"]) * Number(p.Stok)
-            })).sort((a, b) => b.totalVal - a.totalVal);
-
-            const topAssetTbody = document.getElementById('top-asset-table');
-            topAssetTbody.innerHTML = '';
-            sortedByAsset.slice(0, 5).forEach(p => {
-                topAssetTbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="p-2.5 font-semibold text-slate-800">${p["Nama Barang"]}</td>
-                        <td class="p-2.5 text-center text-slate-600 font-medium">${p.Stok} pcs</td>
-                        <td class="p-2.5 text-right font-bold text-red-600">Rp ${p.totalVal.toLocaleString('id-ID')}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        loadOwnerData();
     </script>
 </body>
 </html>
