@@ -379,7 +379,11 @@
         function executeRawBTIntentPrint(items, subtotal, cash, change) {
             let trxId = "805-" + Math.floor(100000 + Math.random() * 900000);
             let now = new Date();
-            let dateStr = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            
+            // Format Tanggal dan Jam Real-Time
+            let dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            let timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
             let cashierName = activeUser.nama_lengkap;
 
             let textData = "        805 MART\n";
@@ -387,7 +391,8 @@
             textData += " Kawanua Emerald City Manado\n";
             textData += "--------------------------------\n";
             textData += `No. Nota : ${trxId}\n`;
-            textData += `Waktu   : ${dateStr}\n`;
+            textData += `Tanggal : ${dateStr}\n`;
+            textData += `Jam     : ${timeStr} WITA\n`;
             textData += `Kasir   : ${cashierName}\n`;
             textData += "--------------------------------\n";
 
