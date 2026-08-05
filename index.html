@@ -4,58 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Terminal - 805 Mart Manado</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-950 via-slate-900 to-red-950 text-slate-800 h-screen w-screen flex items-center justify-center p-4 antialiased overflow-hidden m-0">
+<body class="bg-slate-950 text-slate-800 h-screen w-screen flex items-center justify-center p-4 antialiased overflow-hidden m-0">
     
-    <div class="bg-white/95 backdrop-blur-xl w-full max-w-md p-8 rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-white/20 space-y-7 relative overflow-hidden">
-        
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-rose-500 to-red-700"></div>
+    <div class="bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl border border-slate-100 space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-2 bg-red-600"></div>
 
-        <div class="text-center space-y-3 pt-2">
+        <div class="text-center space-y-2 pt-2">
             <div class="flex justify-center items-center">
-                <img src="Logo.png" alt="Logo 805 Mart" class="w-44 h-auto object-contain drop-shadow-md transition transform hover:scale-105 duration-300" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=805+Mart';">
+                <img src="Logo.png" alt="Logo 805 Mart" class="w-44 h-auto object-contain drop-shadow-md" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=805+Mart';">
             </div>
             <div class="space-y-1">
-                <h2 class="text-lg font-extrabold text-slate-900 tracking-wide">PORTAL KASIR & MANAJEMEN</h2>
-                <p class="text-xs text-slate-500 font-medium">Silakan masuk untuk mengakses terminal sistem</p>
+                <h2 class="text-base font-extrabold text-slate-800 tracking-wide">PORTAL KASIR & MANAJEMEN</h2>
+                <p class="text-xs text-slate-400 font-medium">Silakan masuk untuk mengakses terminal sistem</p>
             </div>
         </div>
 
         <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Username / ID Pengguna</label>
-                <div class="relative group">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-red-600 transition">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Username / ID Pengguna</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                         <i class="fa-solid fa-user text-sm"></i>
                     </span>
                     <input type="text" id="username" required placeholder="Contoh: kasir, admin, owner" 
-                        class="w-full bg-slate-50/80 pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:bg-white focus:border-red-600 focus:ring-4 focus:ring-red-600/10 text-sm font-bold text-slate-800 transition">
+                        class="w-full bg-slate-50 pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600 text-sm font-bold text-slate-800">
                 </div>
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">PIN / Password</label>
-                <div class="relative group">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-red-600 transition">
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">PIN / Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                         <i class="fa-solid fa-lock text-sm"></i>
                     </span>
                     <input type="password" id="password" required placeholder="Masukkan PIN keamanan..." 
-                        class="w-full bg-slate-50/80 pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:bg-white focus:border-red-600 focus:ring-4 focus:ring-red-600/10 text-sm font-bold text-slate-800 transition">
+                        class="w-full bg-slate-50 pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600 text-sm font-bold text-slate-800">
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white py-4 rounded-2xl font-extrabold shadow-lg shadow-red-600/30 transition-all duration-200 text-sm flex justify-center items-center gap-2.5 cursor-pointer mt-3 active:scale-[0.98]">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white py-4 rounded-2xl font-extrabold shadow-xl shadow-red-200 transition text-sm flex justify-center items-center gap-2 cursor-pointer mt-2">
                 <i class="fa-solid fa-right-to-bracket text-base"></i> Masuk Terminal Sistem
             </button>
         </form>
 
-        <div class="text-center pt-3 border-t border-slate-100 flex flex-col items-center space-y-1.5">
+        <div class="text-center pt-3 border-t border-slate-100 flex flex-col items-center space-y-1">
             <div class="flex items-center gap-1.5 text-emerald-600 text-[11px] font-bold bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Google Sheets Cloud Connected</span>
@@ -65,9 +64,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwY29-01kFoIAJ_8ALwOkg7HU9vcYUGmFlrZrlUCbjTxNmjFVLXkSUZOhxcRX0pM88/exec";
-
-        // Bersihkan sesi lama saat pertama buka halaman login agar tidak tersangkut
+        const API_URL = "https://script.google.com/macros/s/AKfycbzvMndS6Q0_jx-9_3XMcreaMUKtbUNIft2gOJ4i3YUBL8rUwD4m418LdIxC0jM8DNCA/exec";
         localStorage.removeItem('ritel_active_user');
 
         function handleLogin(e) {
@@ -76,7 +73,7 @@
             let passVal = document.getElementById('password').value.trim();
 
             if (!userVal || !passVal) {
-                alert("Username dan PIN/Password wajib diisi!");
+                alert("Username dan PIN wajib diisi!");
                 return;
             }
 
@@ -91,14 +88,9 @@
 
             localStorage.setItem('ritel_active_user', JSON.stringify(userData));
 
-            // Redirect sesuai role
-            if (role === 'Admin') {
-                window.location.href = 'admin.html';
-            } else if (role === 'Owner') {
-                window.location.href = 'owner.html';
-            } else {
-                window.location.href = 'kasir.html';
-            }
+            if (role === 'Admin') window.location.href = 'admin.html';
+            else if (role === 'Owner') window.location.href = 'owner.html';
+            else window.location.href = 'kasir.html';
         }
     </script>
 </body>
