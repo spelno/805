@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Admin - 805 Mart Manado</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -56,7 +56,7 @@
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwY29-01kFoIAJ_8ALwOkg7HU9vcYUGmFlrZrlUCbjTxNmjFVLXkSUZOhxcRX0pM88/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzvMndS6Q0_jx-9_3XMcreaMUKtbUNIft2gOJ4i3YUBL8rUwD4m418LdIxC0jM8DNCA/exec";
 
         window.onload = () => { loadAdminProducts(); };
 
@@ -71,7 +71,7 @@
                 let data = await res.json();
                 const tbody = document.getElementById('admin-product-list');
                 tbody.innerHTML = '';
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
                     return;
                 }
@@ -86,7 +86,7 @@
                     `;
                 });
             } catch (e) {
-                document.getElementById('admin-product-list').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Gagal memuat data dari Google Sheets. Periksa URL GAS.</td></tr>`;
+                document.getElementById('admin-product-list').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Gagal memuat data dari Google Sheets.</td></tr>`;
             }
         }
     </script>
