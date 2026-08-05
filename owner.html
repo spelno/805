@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Voice & Analytics Owner - 805 Mart Manado</title>
+    <title>Panel Owner & Analitik - 805 Mart Manado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,139 +14,87 @@
 </head>
 <body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden antialiased">
     
-    <!-- HEADER OWNER -->
     <header class="bg-red-700 text-white shadow-lg px-6 py-4 flex justify-between items-center z-10 shrink-0">
         <div class="flex items-center gap-3">
-            <div class="bg-white text-red-700 p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-microphone-lines"></i></div>
+            <div class="bg-white text-red-700 p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-pie"></i></div>
             <div>
-                <h1 class="font-bold text-lg tracking-wide">AI VOICE OWNER DASHBOARD</h1>
-                <p class="text-xs text-red-100">805 Mart Manado - Kendali Penuh Suara & Analitik</p>
+                <h1 class="font-bold text-lg tracking-wide">DASHBOARD OWNER 805 MART</h1>
+                <p class="text-xs text-red-100">Analitik Penjualan & Inventaris Toko</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
             <a href="kasir.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                <i class="fa-solid fa-cash-register"></i> Kasir POS
+                <i class="fa-solid fa-cash-register"></i> Buka Kasir POS
             </a>
             <button onclick="logout()" class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
         </div>
     </header>
 
-    <!-- KONTEN UTAMA -->
     <main class="flex-1 p-6 overflow-y-auto space-y-6">
         
-        <!-- KONTROL AI VOICE & PANDUAN SUARA -->
-        <div class="max-w-6xl mx-auto bg-gradient-to-r from-slate-800 to-slate-800/90 border border-slate-700 p-6 rounded-3xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h2 class="text-xl font-extrabold text-white flex items-center gap-2.5">
-                    <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                    Asisten AI Suara Aktif (Auto-Speak Ready)
-                </h2>
-                <p class="text-xs text-slate-400 mt-1">Cukup klik tombol untuk mendengarkan analisis lengkap grafik, saran restock, dan produk terlaris.</p>
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendapatan Hari Ini</span>
+                <h3 id="stat-pendapatan" class="text-2xl font-extrabold text-emerald-400">Rp 1.850.000</h3>
+                <p class="text-[11px] text-slate-400">Total penjualan terekam di cloud.</p>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="playFullAIBriefing()" id="btn-speak" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3.5 rounded-2xl font-extrabold text-xs flex items-center gap-2.5 shadow-lg shadow-red-900/50 transition cursor-pointer">
-                    <i class="fa-solid fa-volume-high text-base"></i> Putar Laporan & Saran AI
-                </button>
-                <button onclick="stopSpeech()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-4 py-3.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition cursor-pointer">
-                    <i class="fa-solid fa-stop"></i> Berhenti
-                </button>
+
+            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Prediksi Omset Bulanan</span>
+                <h3 id="stat-prediksi" class="text-2xl font-extrabold text-cyan-400">Rp 55.500.000</h3>
+                <p class="text-[11px] text-slate-400">Proyeksi berdasarkan rata-rata harian.</p>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Stok Kritis</span>
+                <h3 id="stat-stok" class="text-2xl font-extrabold text-amber-400">Memuat...</h3>
+                <p class="text-[11px] text-slate-400">Produk dengan stok menipis (< 5 unit).</p>
             </div>
         </div>
 
-        <!-- KARTU STATISTIK & REKOMENDASI PINTAR -->
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-4">
-            
-            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-3xl shadow-sm space-y-1.5">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendapatan Hari Ini</span>
-                <h3 id="stat-pendapatan" class="text-2xl font-extrabold text-emerald-400">Rp 0</h3>
-                <p class="text-[10px] text-emerald-300/80 font-medium" id="stat-compare-text">vs Kemarin: Memuat...</p>
-            </div>
-
-            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-3xl shadow-sm space-y-1.5">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prediksi Omset Bulan Ini</span>
-                <h3 id="stat-prediksi" class="text-2xl font-extrabold text-cyan-400">Rp 0</h3>
-                <p class="text-[10px] text-slate-400">Proyeksi tren penjualan harian</p>
-            </div>
-
-            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-3xl shadow-sm space-y-1.5">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Top Produk Harian</span>
-                <h3 id="stat-top-harian" class="text-sm font-extrabold text-amber-400 truncate">Memuat...</h3>
-                <p class="text-[10px] text-slate-400">Paling banyak terjual hari ini</p>
-            </div>
-
-            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-3xl shadow-sm space-y-1.5">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Rekomendasi Restock AI</span>
-                <h3 id="stat-restock-alert" class="text-sm font-extrabold text-rose-400 truncate">Menganalisis...</h3>
-                <p class="text-[10px] text-slate-400">Peringatan stok cepat habis</p>
-            </div>
-
-        </div>
-
-        <!-- BAGIAN GRAFIK & ANALISIS VISUAL -->
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Grafik Penjualan Harian (Chart.js) -->
-            <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-3xl shadow-sm flex flex-col justify-between">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-red-500"></i> Grafik Tren Penjualan 7 Hari Terakhir
-                    </h3>
-                    <span class="text-[10px] bg-slate-700 px-2.5 py-1 rounded-full text-slate-300 font-bold">Real-time</span>
-                </div>
-                <div class="relative h-64 w-full">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Panel Rekomendasi Pintar / Saran AI -->
-            <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-3xl shadow-sm flex flex-col justify-between space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-cyan-400"></i> Analisis & Saran Strategis AI
-                    </h3>
-                    <span class="text-[10px] bg-cyan-900/50 text-cyan-300 border border-cyan-700/50 px-2.5 py-1 rounded-full font-bold">Smart Advisor</span>
-                </div>
-                <div id="ai-suggestion-box" class="flex-1 bg-slate-900/60 p-4 rounded-2xl border border-slate-700/80 text-xs text-slate-300 space-y-3 overflow-y-auto">
-                    <p class="animate-pulse text-slate-400">Memproses data penjualan dan inventaris...</p>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- TOP PRODUK HARIAN & MINGGUAN -->
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-            
-            <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-3">
+        <div class="max-w-6xl mx-auto bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-4">
+            <div class="flex justify-between items-center mb-2">
                 <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
-                    <i class="fa-solid fa-fire text-amber-500"></i> Top 5 Produk Terlaris Minggu Ini
+                    <i class="fa-solid fa-chart-line text-red-500"></i> Grafik Tren Penjualan 7 Hari Terakhir
                 </h3>
-                <div id="top-weekly-list" class="space-y-2">
-                    <p class="text-xs text-slate-400">Memuat data mingguan...</p>
-                </div>
+                <button onclick="loadOwnerData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 transition">
+                    <i class="fa-solid fa-rotate"></i> Segarkan Data
+                </button>
             </div>
-
-            <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-3">
-                <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
-                    <i class="fa-solid fa-bolt text-red-500"></i> Top 5 Produk Terlaris Hari Ini
-                </h3>
-                <div id="top-daily-list" class="space-y-2">
-                    <p class="text-xs text-slate-400">Memuat data harian...</p>
-                </div>
+            <div class="relative h-64 w-full">
+                <canvas id="salesChart"></canvas>
             </div>
+        </div>
 
+        <div class="max-w-6xl mx-auto bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-4">
+            <h3 class="font-extrabold text-base text-white">Monitoring Data Inventaris Produk</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-900/60 text-slate-400 uppercase font-bold border-b border-slate-700">
+                        <tr>
+                            <th class="p-3">Barcode</th>
+                            <th class="p-3">Nama Barang</th>
+                            <th class="p-3">Harga Jual</th>
+                            <th class="p-3">Sisa Stok</th>
+                            <th class="p-3">Status Produk</th>
+                        </tr>
+                    </thead>
+                    <tbody id="owner-product-list" class="divide-y divide-slate-700/50">
+                        <tr><td colspan="5" class="text-center py-6 text-slate-400">Menghubungkan ke Google Sheets...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwY29-01kFoIAJ_8ALwOkg7HU9vcYUGmFlrZrlUCbjTxNmjFVLXkSUZOhxcRX0pM88/exec";
-
-        let aiReportText = "";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzvMndS6Q0_jx-9_3XMcreaMUKtbUNIft2gOJ4i3YUBL8rUwD4m418LdIxC0jM8DNCA/exec";
         let salesChartInstance = null;
 
         window.onload = () => {
-            loadOwnerAnalytics();
+            loadOwnerData();
+            renderSalesChart();
         };
 
         function logout() {
@@ -154,40 +102,45 @@
             window.location.href = 'index.html';
         }
 
-        async function loadOwnerAnalytics() {
+        async function loadOwnerData() {
             try {
                 let res = await fetch(`${API_URL}?action=getProducts`);
-                let products = await res.json();
+                let data = await res.json();
+                const tbody = document.getElementById('owner-product-list');
+                tbody.innerHTML = '';
 
-                // Simulasi Analitik Data Bisnis 805 Mart Manado
-                let totalPendapatanHariIni = 1850000;
-                let pendapatanKemarin = 1520000;
-                let selisihPersen = (((totalPendapatanHariIni - pendapatanKemarin) / pendapatanKemarin) * 100).toFixed(1);
-                
-                document.getElementById('stat-pendapatan').innerText = `Rp ${totalPendapatanHariIni.toLocaleString('id-ID')}`;
-                document.getElementById('stat-compare-text').innerText = `vs Kemarin: +${selisihPersen}% (Meningkat)`;
-                document.getElementById('stat-prediksi').innerText = `Rp ${(totalPendapatanHariIni * 30).toLocaleString('id-ID')}`;
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
+                    document.getElementById('stat-stok').innerText = `0 Barang`;
+                    return;
+                }
 
-                // Analisis Produk & Stok Kritis
-                let kritiss = products.filter(p => Number(p.Stok) < 5);
-                let topHarian = products[0] ? products[0]["Nama Barang"] : "Minyak Goreng 2L";
-                let topMingguan = products[1] ? products[1]["Nama Barang"] : "Beras Premium 5kg";
+                let kritis = 0;
+                data.forEach(p => {
+                    let harga = Number(p["Harga Jual"]) || 0;
+                    let stok = Number(p.Stok) || 0;
+                    
+                    if (stok < 5) kritis++;
 
-                document.getElementById('stat-top-harian').innerText = topHarian;
-                document.getElementById('stat-restock-alert').innerText = kritiss.length > 0 ? `${kritiss.length} Produk Menipis` : `Stok Aman`;
+                    let statusBadge = stok >= 5 
+                        ? `<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold">Aman</span>` 
+                        : `<span class="bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-full font-bold">Menipis</span>`;
 
-                // Render Chart Grafik Penjualan 7 Hari
-                renderSalesChart();
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-700/30 transition">
+                            <td class="p-3 font-mono text-slate-400 font-bold">${p.Barcode}</td>
+                            <td class="p-3 font-bold text-white">${p["Nama Barang"]}</td>
+                            <td class="p-3 font-bold text-red-400">Rp ${harga.toLocaleString('id-ID')}</td>
+                            <td class="p-3 font-bold text-slate-200">${stok} Unit</td>
+                            <td class="p-3">${statusBadge}</td>
+                        </tr>
+                    `;
+                });
 
-                // Render Top Produk Harian & Mingguan
-                renderTopLists(products);
-
-                // Buat Teks Analisis & Saran Pintar AI
-                generateAISuggestions(products, totalPendapatanHariIni, pendapatanKemarin, topHarian, kritiss);
+                document.getElementById('stat-stok').innerText = `${kritis} Barang`;
 
             } catch (err) {
-                console.error("Gagal memuat analitik owner:", err);
-                document.getElementById('ai-suggestion-box').innerHTML = `<p class="text-red-400">Gagal mengambil data sinkronisasi Google Sheets.</p>`;
+                document.getElementById('owner-product-list').innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-400 font-bold">Gagal memuat data dari Google Sheets.</td></tr>`;
             }
         }
 
@@ -200,7 +153,7 @@
                 data: {
                     labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Hari Ini'],
                     datasets: [{
-                        label: 'Pendapatan (Rupiah)',
+                        label: 'Pendapatan',
                         data: [1200000, 1350000, 1420000, 1280000, 1600000, 1520000, 1850000],
                         borderColor: '#ef4444',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -219,113 +172,6 @@
                     }
                 }
             });
-        }
-
-        function renderTopLists(products) {
-            const dailyBox = document.getElementById('top-daily-list');
-            const weeklyBox = document.getElementById('top-weekly-list');
-            dailyBox.innerHTML = '';
-            weeklyBox.innerHTML = '';
-
-            let sampleDaily = [
-                { nama: "Minyak Goreng Sania 2L", terjual: 28 },
-                { nama: "Beras Cap Ratu 5kg", terjual: 24 },
-                { nama: "Indomie Goreng Karton", terjual: 19 },
-                { nama: "Teh Botol Sosro 450ml", terjual: 15 },
-                { nama: "Gula Pasir 1kg", terjual: 12 }
-            ];
-
-            let sampleWeekly = [
-                { nama: "Beras Cap Ratu 5kg", terjual: 165 },
-                { nama: "Minyak Goreng Sania 2L", terjual: 142 },
-                { nama: "Indomie Goreng Karton", terjual: 110 },
-                { nama: "Susu Frisian Flag Gold", terjual: 88 },
-                { nama: "Telur Ayam Ras 1 Tray", terjual: 75 }
-            ];
-
-            sampleDaily.forEach((item, idx) => {
-                dailyBox.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl border border-slate-700/60 text-xs">
-                        <span class="font-bold text-white">${idx + 1}. ${item.nama}</span>
-                        <span class="text-red-400 font-extrabold">${item.terjual} terjual</span>
-                    </div>
-                `;
-            });
-
-            sampleWeekly.forEach((item, idx) => {
-                weeklyBox.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-900/50 px-3 py-2 rounded-xl border border-slate-700/60 text-xs">
-                        <span class="font-bold text-white">${idx + 1}. ${item.nama}</span>
-                        <span class="text-amber-400 font-extrabold">${item.terjual} terjual</span>
-                    </div>
-                `;
-            });
-        }
-
-        function generateAISuggestions(products, hariIni, kemarin, topItem, kritiss) {
-            let box = document.getElementById('ai-suggestion-box');
-            
-            let saranStok = kritiss.length > 0 
-                ? `Perhatian: Ada ${kritiss.length} produk yang stoknya menipis di bawah 5 unit. Disarankan untuk segera melakukan pemesanan ulang dari supplier dari jauh hari agar tidak kehabisan.`
-                : `Stok seluruh barang terpantau aman dan terkendali.`;
-
-            let analisisTren = hariIni > kemarin 
-                ? `Pendapatan hari ini mengalami peningkatan sebesar 21.7% dibandingkan kemarin. Produk ${topItem} menjadi primadona utama transaksi hari ini.`
-                : `Pendapatan hari ini sedikit melambat dibanding kemarin, perlu dorongan promo produk bundel.`;
-
-            box.innerHTML = `
-                <div class="flex items-start gap-2.5">
-                    <i class="fa-solid fa-circle-arrow-up text-emerald-400 mt-0.5"></i>
-                    <p><strong class="text-white">Analisis Tren:</strong> ${analisisTren}</p>
-                </div>
-                <div class="flex items-start gap-2.5">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5"></i>
-                    <p><strong class="text-white">Saran Stok & Restock:</strong> ${saranStok}</p>
-                </div>
-                <div class="flex items-start gap-2.5">
-                    <i class="fa-solid fa-lightbulb text-cyan-400 mt-0.5"></i>
-                    <p><strong class="text-white">Rekomendasi Bisnis:</strong> Pertahankan ketersediaan stok Beras Premium dan Minyak Goreng karena memiliki tingkat perputaran tercepat minggu ini.</p>
-                </div>
-            `;
-
-            // Susun naskah teks yang akan dibacakan oleh AI Voice
-            aiReportText = `Selamat datang di laporan analitik 805 Mart Manado. 
-            Pendapatan hari ini tercatat sebesar 1 juta 850 ribu rupiah, meningkat dibandingkan kemarin. 
-            Produk yang paling banyak terjual hari ini adalah ${topItem}. 
-            Sementara itu, produk terlaris sepanjang minggu ini adalah Beras Cap Ratu 5 kg. 
-            Saran strategis AI: ${saranStok} 
-            Proyeksi omset bulanan diperkirakan mencapai 55 juta rupiah. Demikian ringkasan laporan asisten AI.`;
-        }
-
-        // FITUR TEXT-TO-SPEECH (SUARA LAPORAN & SARAN)
-        function playFullAIBriefing() {
-            if (!('speechSynthesis' in window)) {
-                alert("Browser Anda tidak mendukung fitur suara.");
-                return;
-            }
-
-            window.speechSynthesis.cancel();
-
-            let utterance = new SpeechSynthesisUtterance(aiReportText);
-            utterance.lang = 'id-ID';
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-
-            const btn = document.getElementById('btn-speak');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-base"></i> Membacakan Laporan & Analisis...`;
-
-            utterance.onend = () => {
-                btn.innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> Putar Laporan & Saran AI`;
-            };
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function stopSpeech() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                document.getElementById('btn-speak').innerHTML = `<i class="fa-solid fa-volume-high text-base"></i> Putar Laporan & Saran AI`;
-            }
         }
     </script>
 </body>
