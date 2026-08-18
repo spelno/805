@@ -3,261 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stok Inventory - Ritel Express</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
+    <title>Inventory - 805 Mart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        const activeUser = JSON.parse(localStorage.getItem('ritel_active_user'));
-        if (!activeUser || (activeUser.role !== 'Inventory' && activeUser.role !== 'Admin')) { window.location.href = 'index.html'; }
+        // SATPAM KEAMANAN: Cek apakah user benar-benar Inventory (Level 3)
+        const session = JSON.parse(localStorage.getItem('session_805'));
+        if (!session || session.level != 3) {
+            alert("Akses ditolak! Area khusus Inventory.");
+            window.location.href = "index.html";
+        }
     </script>
 </head>
-<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden antialiased">
-    <header class="bg-red-600 text-white shadow-md px-6 py-3 flex justify-between items-center z-10">
-        <div class="flex items-center gap-3">
-            <button onclick="goHome()" class="bg-white/20 hover:bg-white/30 text-white w-9 h-9 rounded-xl flex items-center justify-center transition cursor-pointer" title="Kembali">
-                <i class="fa-solid fa-house text-sm"></i>
-            </button>
-            <div class="bg-white text-red-600 p-2 rounded-xl font-extrabold text-xl shadow"><i class="fa-solid fa-boxes-stacked"></i></div>
-            <div>
-                <h1 class="font-bold text-lg tracking-wide">RITEL EXPRESS</h1>
-                <p class="text-xs text-red-100 font-medium">Manajemen Gudang & Stok</p>
-            </div>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Header / Navbar Inventory -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-extrabold text-cyan-400">805 Mart - Inventory & Gudang</h1>
+            <p class="text-sm text-gray-300">Petugas Bertugas: <span id="inventoryNama" class="font-semibold text-white"></span></p>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="text-right">
-                <p id="staff-name" class="text-sm font-bold">Staf Gudang</p>
-                <button onclick="logout()" class="text-xs text-red-100 underline hover:text-white cursor-pointer">Keluar</button>
-            </div>
-            <div id="staff-initial" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold">G</div>
-        </div>
+        <button onclick="logout()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-semibold transition">
+            Keluar
+        </button>
     </header>
 
-    <main class="flex-1 bg-slate-50 p-8 overflow-y-auto">
-        <div class="max-w-5xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Kolom Kiri: Form Input Barang Masuk / Restock -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
+            <h2 class="text-lg font-semibold text-cyan-300 mb-4">Input Barang Masuk (Restock)</h2>
+            
+            <form onsubmit="tambahBarangMasuk(event)" class="space-y-4">
                 <div>
-                    <h2 class="text-2xl font-extrabold text-slate-800">Kontrol Stok & Produk</h2>
-                    <p class="text-sm text-slate-500">Tembak barcode menggunakan alat scanner fisik atau ketik di kolom bawah.</p>
+                    <label class="block text-sm text-gray-300 mb-1">Kode Barang / SKU</label>
+                    <input type="text" id="kodeBarang" required placeholder="Contoh: BRG-001" 
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
                 </div>
-                <!-- Tombol kamera opsional jika sewaktu-waktu darurat -->
-                <button onclick="toggleCameraScanner()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-camera"></i> Buka Kamera Darurat
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">Nama Barang</label>
+                    <input type="text" id="namaBarang" required placeholder="Nama Produk..." 
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-1">Jumlah Masuk</label>
+                        <input type="number" id="jumlahMasuk" required min="1" placeholder="0" 
+                            class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-300 mb-1">Min. Stok (Warning)</label>
+                        <input type="number" id="minStok" required min="1" placeholder="5" 
+                            class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">Harga Jual (Rp)</label>
+                    <input type="number" id="hargaJual" required placeholder="0" 
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-bold rounded-xl transition shadow-lg shadow-cyan-500/20">
+                    Simpan / Perbarui Stok
                 </button>
-            </div>
+            </form>
+        </div>
 
-            <!-- Kotak Kamera Tersembunyi (Hanya muncul jika tombol kamera ditekan) -->
-            <div id="reader-container" class="hidden mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-lg relative max-w-sm">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-slate-700">Kamera Darurat (Opsional)</span>
-                    <button onclick="toggleCameraScanner()" class="text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 rounded-lg cursor-pointer">Tutup</button>
-                </div>
-                <div id="reader" class="w-full rounded-xl overflow-hidden bg-slate-100"></div>
-            </div>
-
-            <!-- Kolom Utama Target Scanner Inframerah -->
-            <div class="mb-4">
-                <div class="relative">
-                    <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-red-600 text-lg"></i>
-                    <input type="text" id="inventory-search" placeholder="Tembak Barcode dengan Alat Scanner Inframerah di sini..." class="w-full bg-white pl-12 pr-4 py-3.5 rounded-xl border-2 border-red-500 text-sm font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-red-600">
-                </div>
-                <p class="text-xs text-slate-400 mt-1.5 ml-1">*Kursor otomatis aktif di kolom ini. Tembak barcode produk untuk langsung mengecek stok atau menambah barang baru.</p>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <table class="w-full text-left border-collapse text-sm">
+        <!-- Kolom Tengah & Kanan: Monitoring Stok Gudang -->
+        <div class="lg:col-span-2 bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
+            <h2 class="text-lg font-semibold text-cyan-300 mb-4">Monitoring Stok Gudang Real-Time</h2>
+            
+            <div class="flex-1 overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-red-50 text-red-700 border-b border-slate-200 font-bold">
-                            <th class="p-4">Barcode</th>
-                            <th class="p-4">Nama Barang</th>
-                            <th class="p-4">Kategori</th>
-                            <th class="p-4">Harga Jual</th>
-                            <th class="p-4 text-center">Sisa Stok</th>
-                            <th class="p-4 text-center">Aksi</th>
+                        <tr class="border-b border-gray-700 text-gray-400 text-sm">
+                            <th class="py-3 px-2">Kode</th>
+                            <th class="py-3 px-2">Nama Barang</th>
+                            <th class="py-3 px-2">Harga Jual</th>
+                            <th class="py-3 px-2">Stok Saat Ini</th>
+                            <th class="py-3 px-2">Status</th>
                         </tr>
                     </thead>
-                    <tbody id="inventory-table-body" class="divide-y divide-slate-100">
-                        <tr><td colspan="6" class="p-8 text-center text-slate-400">Memuat data dari Google Sheets...</td></tr>
+                    <tbody id="inventoryTableBody">
+                        <!-- Data barang akan dimuat di sini -->
+                        <tr class="border-b border-gray-800 text-sm">
+                            <td colspan="5" class="py-4 text-center text-gray-400">Memuat data inventaris...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwY29-01kFoIAJ_8ALwOkg7HU9vcYUGmFlrZrlUCbjTxNmjFVLXkSUZOhxcRX0pM88/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbynWGswG834HXNGAB1bV7bvFfZgraJVShRy1Bu-fsnp6NCmGWwUQUWRtyzCFeZo-I_VMA/exec";
 
-        let products = [];
-        let html5QrCode = null;
-
-        document.getElementById('staff-name').innerText = activeUser.nama_lengkap;
-        document.getElementById('staff-initial').innerText = activeUser.nama_lengkap.charAt(0).toUpperCase();
-
-        // Fokuskan kursor secara otomatis ke kotak scanner agar alat inframerah langsung siap tembak
-        const searchInput = document.getElementById('inventory-search');
-        window.onload = () => { searchInput.focus(); };
-        document.addEventListener('click', () => { if(document.activeElement.tagName !== 'INPUT') searchInput.focus(); });
+        // Inisialisasi Nama Petugas Inventory
+        document.getElementById('inventoryNama').innerText = session.nama;
 
         function logout() {
-            localStorage.removeItem('ritel_active_user');
-            window.location.href = 'index.html';
+            localStorage.removeItem('session_805');
+            window.location.href = "index.html";
         }
 
-        function goHome() {
-            if (activeUser.role === 'Admin') window.location.href = 'admin.html';
-            else window.location.href = 'index.html';
-        }
-
-        async function loadInventoryData() {
-            try {
-                let res = await fetch(`${API_URL}?action=getProducts`);
-                products = await res.json();
-                renderInventory(products);
-            } catch (err) {
-                products = [];
-                renderInventory(products);
-            }
-        }
-
-        function renderInventory(list) {
-            const tbody = document.getElementById('inventory-table-body');
-            tbody.innerHTML = '';
-            if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">Belum ada produk. Silakan tembak barcode produk pertama Anda di atas.</td></tr>`;
-                return;
-            }
-            list.forEach(p => {
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="p-4 font-mono font-bold text-slate-500">${p.Barcode}</td>
-                        <td class="p-4 font-semibold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid ${p.Ikon || 'fa-box'} text-red-600"></i> ${p["Nama Barang"]}
-                        </td>
-                        <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs">${p.Kategori}</span></td>
-                        <td class="p-4 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
-                        <td class="p-4 text-center font-extrabold ${p.Stok > 10 ? 'text-slate-700' : 'text-red-600'}">${p.Stok} pcs</td>
-                        <td class="p-4 text-center">
-                            <button onclick="restockItem('${p.Barcode}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer">Tambah Stok</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Filter tabel secara real-time saat mengetik biasa
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            const filtered = products.filter(p => String(p["Nama Barang"]).toLowerCase().includes(query) || String(p.Barcode).toLowerCase().includes(query));
-            renderInventory(filtered);
-        });
-
-        // Tangkap hasil tembakan dari Scanner Inframerah Fisik (mengirim Enter di akhir)
-        searchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                let scannedCode = this.value.trim();
-                if (scannedCode) {
-                    processScannedBarcode(scannedCode);
-                    this.value = ''; // Kosongkan kembali kolom untuk tembakan berikutnya
-                }
-            }
-        });
-
-        // Pencocokan Barcode: Ada -> Restock, Tidak Ada -> Input Barang Baru
-        function processScannedBarcode(barcode) {
-            const p = products.find(item => String(item.Barcode) === String(barcode));
-            if (p) {
-                restockItem(p.Barcode);
-            } else {
-                let addNew = confirm(`Barcode [ ${barcode} ] belum terdaftar di database.\n\nApakah Anda ingin menambahkan barang baru ini?`);
-                if (addNew) {
-                    promptNewProductDetails(barcode);
-                }
-            }
-        }
-
-        async function restockItem(barcode) {
-            const p = products.find(item => String(item.Barcode) === String(barcode));
-            if (!p) return;
-
-            let addQty = prompt(`[ 📦 ${p["Nama Barang"]} ]\nBarcode: ${p.Barcode}\nStok Saat Ini: ${p.Stok} pcs\n\nMasukkan jumlah penambahan stok:`, "10");
-            if (addQty && !isNaN(addQty)) {
-                p.Stok = Number(p.Stok) + Number(addQty);
-                try {
-                    await fetch(API_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "updateStock", barcode: p.Barcode, newStock: p.Stok })
-                    });
-                } catch(e) {}
-
-                renderInventory(products);
-                alert(`Stok berhasil ditambah! Stok sekarang: ${p.Stok} pcs.`);
-                searchInput.focus();
-            }
-        }
-
-        async function promptNewProductDetails(barcodeId) {
-            let name = prompt(`Mendaftarkan Barcode Baru: [ ${barcodeId} ]\n\nMasukkan Nama Barang:`);
-            if (!name) { searchInput.focus(); return; }
+        async function tambahBarangMasuk(e) {
+            e.preventDefault();
             
-            let price = prompt("Masukkan Harga Jual (Contoh: 10000):", "10000");
-            let stock = prompt("Masukkan Stok Awal:", "50");
-
-            let newProd = {
-                id: barcodeId,
-                name: name,
-                category: "Umum",
-                price: Number(price) || 5000,
-                stock: Number(stock) || 10,
-                icon: "fa-box"
+            const payload = {
+                action: "addProduct",
+                kode_barang: document.getElementById('kodeBarang').value.trim(),
+                nama_barang: document.getElementById('namaBarang').value.trim(),
+                jumlah_masuk: Number(document.getElementById('jumlahMasuk').value),
+                min_stok: Number(document.getElementById('minStok').value),
+                harga_jual: Number(document.getElementById('hargaJual').value)
             };
 
-            products.push({
-                Barcode: newProd.id,
-                "Nama Barang": newProd.name,
-                Kategori: newProd.category,
-                "Harga Jual": newProd.price,
-                Stok: newProd.stock,
-                Ikon: newProd.icon
-            });
-
             try {
-                await fetch(API_URL, {
+                let response = await fetch(GAS_URL, {
                     method: "POST",
-                    body: JSON.stringify({ action: "addProduct", ...newProd })
+                    body: JSON.stringify(payload)
                 });
-            } catch(e) {}
+                let result = await response.json();
 
-            renderInventory(products);
-            alert(`Barang baru "${name}" berhasil disimpan ke Google Sheets!`);
-            searchInput.focus();
-        }
-
-        // Tombol kamera opsional darurat
-        function toggleCameraScanner() {
-            const container = document.getElementById('reader-container');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 140 } },
-                    (decodedText) => {
-                        toggleCameraScanner(); // Tutup kamera
-                        processScannedBarcode(decodedText);
-                    },
-                    () => {}
-                ).catch(() => { alert("Gagal membuka kamera."); });
-            } else {
-                if (html5QrCode) html5QrCode.stop().catch(() => {});
-                container.classList.add('hidden');
+                if (result.status === "success") {
+                    alert("Stok barang berhasil diperbarui!");
+                    document.getElementById('kodeBarang').value = '';
+                    document.getElementById('namaBarang').value = '';
+                    document.getElementById('jumlahMasuk').value = '';
+                    document.getElementById('minStok').value = '';
+                    document.getElementById('hargaJual').value = '';
+                } else {
+                    alert("Gagal: " + result.message);
+                }
+            } catch (err) {
+                alert("Terjadi kesalahan koneksi server.");
             }
         }
-
-        loadInventoryData();
     </script>
 </body>
 </html>
