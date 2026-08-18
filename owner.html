@@ -1,178 +1,19 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Owner & Analitik - 805 Mart Manado</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden antialiased">
-    
-    <header class="bg-red-700 text-white shadow-lg px-6 py-4 flex justify-between items-center z-10 shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="bg-white text-red-700 p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-chart-pie"></i></div>
-            <div>
-                <h1 class="font-bold text-lg tracking-wide">DASHBOARD OWNER 805 MART</h1>
-                <p class="text-xs text-red-100">Analitik Penjualan & Inventaris Toko</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-3">
-            <a href="kasir.html" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                <i class="fa-solid fa-cash-register"></i> Buka Kasir POS
-            </a>
-            <button onclick="logout()" class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
-        </div>
-    </header>
+<script>
+    // Cek Sesi Keamanan
+    const session = JSON.parse(localStorage.getItem('session_805'));
 
-    <main class="flex-1 p-6 overflow-y-auto space-y-6">
-        
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pendapatan Hari Ini</span>
-                <h3 id="stat-pendapatan" class="text-2xl font-extrabold text-emerald-400">Rp 1.850.000</h3>
-                <p class="text-[11px] text-slate-400">Total penjualan terekam di cloud.</p>
-            </div>
+    // Jika tidak ada sesi atau level bukan Owner (1), tendang keluar!
+    if (!session || session.level != 1) {
+        alert("Akses ditolak! Anda harus login sebagai Owner.");
+        window.location.href = "index.html";
+    } else {
+        // Tampilkan nama atau foto profil owner di elemen tertentu jika mau
+        console.log("Selamat datang, " + session.nama);
+    }
 
-            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Prediksi Omset Bulanan</span>
-                <h3 id="stat-prediksi" class="text-2xl font-extrabold text-cyan-400">Rp 55.500.000</h3>
-                <p class="text-[11px] text-slate-400">Proyeksi berdasarkan rata-rata harian.</p>
-            </div>
-
-            <div class="bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-2">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Stok Kritis</span>
-                <h3 id="stat-stok" class="text-2xl font-extrabold text-amber-400">Memuat...</h3>
-                <p class="text-[11px] text-slate-400">Produk dengan stok menipis (< 5 unit).</p>
-            </div>
-        </div>
-
-        <div class="max-w-6xl mx-auto bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-4">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-red-500"></i> Grafik Tren Penjualan 7 Hari Terakhir
-                </h3>
-                <button onclick="loadOwnerData()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 transition">
-                    <i class="fa-solid fa-rotate"></i> Segarkan Data
-                </button>
-            </div>
-            <div class="relative h-64 w-full">
-                <canvas id="salesChart"></canvas>
-            </div>
-        </div>
-
-        <div class="max-w-6xl mx-auto bg-slate-800 border border-slate-700 p-6 rounded-3xl shadow-sm space-y-4">
-            <h3 class="font-extrabold text-base text-white">Monitoring Data Inventaris Produk</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-900/60 text-slate-400 uppercase font-bold border-b border-slate-700">
-                        <tr>
-                            <th class="p-3">Barcode</th>
-                            <th class="p-3">Nama Barang</th>
-                            <th class="p-3">Harga Jual</th>
-                            <th class="p-3">Sisa Stok</th>
-                            <th class="p-3">Status Produk</th>
-                        </tr>
-                    </thead>
-                    <tbody id="owner-product-list" class="divide-y divide-slate-700/50">
-                        <tr><td colspan="5" class="text-center py-6 text-slate-400">Menghubungkan ke Google Sheets...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </main>
-
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzvMndS6Q0_jx-9_3XMcreaMUKtbUNIft2gOJ4i3YUBL8rUwD4m418LdIxC0jM8DNCA/exec";
-        let salesChartInstance = null;
-
-        window.onload = () => {
-            loadOwnerData();
-            renderSalesChart();
-        };
-
-        function logout() {
-            localStorage.removeItem('ritel_active_user');
-            window.location.href = 'index.html';
-        }
-
-        async function loadOwnerData() {
-            try {
-                let res = await fetch(`${API_URL}?action=getProducts`);
-                let data = await res.json();
-                const tbody = document.getElementById('owner-product-list');
-                tbody.innerHTML = '';
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
-                    document.getElementById('stat-stok').innerText = `0 Barang`;
-                    return;
-                }
-
-                let kritis = 0;
-                data.forEach(p => {
-                    let harga = Number(p["Harga Jual"]) || 0;
-                    let stok = Number(p.Stok) || 0;
-                    
-                    if (stok < 5) kritis++;
-
-                    let statusBadge = stok >= 5 
-                        ? `<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full font-bold">Aman</span>` 
-                        : `<span class="bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-full font-bold">Menipis</span>`;
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-700/30 transition">
-                            <td class="p-3 font-mono text-slate-400 font-bold">${p.Barcode}</td>
-                            <td class="p-3 font-bold text-white">${p["Nama Barang"]}</td>
-                            <td class="p-3 font-bold text-red-400">Rp ${harga.toLocaleString('id-ID')}</td>
-                            <td class="p-3 font-bold text-slate-200">${stok} Unit</td>
-                            <td class="p-3">${statusBadge}</td>
-                        </tr>
-                    `;
-                });
-
-                document.getElementById('stat-stok').innerText = `${kritis} Barang`;
-
-            } catch (err) {
-                document.getElementById('owner-product-list').innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-400 font-bold">Gagal memuat data dari Google Sheets.</td></tr>`;
-            }
-        }
-
-        function renderSalesChart() {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            if (salesChartInstance) salesChartInstance.destroy();
-
-            salesChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Hari Ini'],
-                    datasets: [{
-                        label: 'Pendapatan',
-                        data: [1200000, 1350000, 1420000, 1280000, 1600000, 1520000, 1850000],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
-                        x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } }
-                    }
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+    // Fungsi Logout
+    function logout() {
+        localStorage.removeItem('session_805');
+        window.location.href = "index.html";
+    }
+</script>
