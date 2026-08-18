@@ -3,90 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - 805 Mart Manado</title>
+    <title>Admin Dashboard - 805 Mart</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
+    <script>
+        // SATPAM KEAMANAN: Cek apakah user benar-benar Admin (Level 2)
+        const session = JSON.parse(localStorage.getItem('session_805'));
+        if (!session || session.level != 2) {
+            alert("Akses ditolak! Area khusus Admin.");
+            window.location.href = "index.html";
+        }
+    </script>
 </head>
-<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
-    
-    <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center z-10 shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="bg-red-600 text-white p-2.5 rounded-2xl font-extrabold text-xl shadow"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-            <div>
-                <h1 class="font-bold text-lg tracking-wide">PANEL ADMIN 805 MART</h1>
-                <p class="text-xs text-slate-400">Manajemen Inventaris & Stok Produk</p>
-            </div>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <!-- Header / Navbar Admin -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-extrabold text-cyan-400">805 Mart - Admin Control Panel</h1>
+            <p class="text-sm text-gray-300">Admin Bertugas: <span id="adminNama" class="font-semibold text-white"></span></p>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="kasir.html" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2">
-                <i class="fa-solid fa-cash-register"></i> Buka Kasir POS
-            </a>
-            <button onclick="logout()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-xs font-bold transition">Keluar</button>
-        </div>
+        <button onclick="logout()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-semibold transition">
+            Keluar
+        </button>
     </header>
 
-    <main class="flex-1 p-6 overflow-y-auto">
-        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-5xl mx-auto space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="font-extrabold text-lg text-slate-800">Daftar Inventaris Produk</h2>
-                <button onclick="loadAdminProducts()" class="bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 transition">
-                    <i class="fa-solid fa-rotate"></i> Muat Ulang
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Kolom 1: Koreksi / Hapus Kesalahan Transaksi Kasir -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
+            <h2 class="text-lg font-semibold text-cyan-300 mb-4">Koreksi & Pembatalan Transaksi Kasir</h2>
+            <p class="text-sm text-gray-400 mb-4">Masukkan ID Nota transaksi yang ingin dibatalkan jika terjadi kesalahan input oleh kasir.</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">ID Nota</label>
+                    <input type="text" id="inputNotaId" placeholder="Contoh: NOTA-1723819200000" 
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-300 mb-1">Alasan Pembatalan / Koreksi</label>
+                    <textarea id="inputAlasan" rows="3" placeholder="Jelaskan alasan koreksi..." 
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white"></textarea>
+                </div>
+                <button onclick="batalkanTransaksi()" class="w-full py-3 bg-red-600 hover:bg-red-500 font-bold rounded-xl transition shadow-lg shadow-red-600/20">
+                    Batalkan / Hapus Transaksi Ini
                 </button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
-                        <tr>
-                            <th class="p-3">Barcode</th>
-                            <th class="p-3">Nama Barang</th>
-                            <th class="p-3">Harga Jual</th>
-                            <th class="p-3">Stok Tersedia</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-product-list" class="divide-y divide-slate-100">
-                        <tr><td colspan="4" class="text-center py-6 text-slate-400">Menghubungkan ke Google Sheets...</td></tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <!-- Kolom 2: Manajemen Akun (Kasir & Inventory) -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-cyan-300 mb-4">Manajemen Akun Staff</h2>
+                <p class="text-sm text-gray-400 mb-4">Panel kontrol untuk menambah akun baru atau mengubah hak akses.</p>
+                
+                <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700 space-y-3">
+                    <p class="text-sm font-medium text-gray-200">Aksi Cepat:</p>
+                    <button onclick="alert('Fitur tambah akun via web form akan terhubung langsung ke tabel Users.')" class="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-gray-950 font-semibold rounded-xl text-sm transition">
+                        + Tambah Akun Kasir / Inventory Baru
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 border-t border-gray-700 pt-4">
+                <p class="text-xs text-gray-500 text-center">Setiap aksi penghapusan dan perubahan data tercatat otomatis dalam sistem audit log 805 Mart.</p>
             </div>
         </div>
+
     </main>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzvMndS6Q0_jx-9_3XMcreaMUKtbUNIft2gOJ4i3YUBL8rUwD4m418LdIxC0jM8DNCA/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbynWGswG834HXNGAB1bV7bvFfZgraJVShRy1Bu-fsnp6NCmGWwUQUWRtyzCFeZo-I_VMA/exec";
 
-        window.onload = () => { loadAdminProducts(); };
+        // Inisialisasi Nama Admin
+        document.getElementById('adminNama').innerText = session.nama;
 
         function logout() {
-            localStorage.removeItem('ritel_active_user');
-            window.location.href = 'index.html';
+            localStorage.removeItem('session_805');
+            window.location.href = "index.html";
         }
 
-        async function loadAdminProducts() {
+        async function batalkanTransaksi() {
+            const idNota = document.getElementById('inputNotaId').value.trim();
+            const alasan = document.getElementById('inputAlasan').value.trim();
+
+            if (!idNota || !alasan) {
+                alert("Harap masukkan ID Nota dan Alasan pembatalan!");
+                return;
+            }
+
+            if (!confirm(`Apakah Anda yakin ingin membatalkan nota ${idNota}?`)) return;
+
+            const payload = {
+                action: "deleteTransaction",
+                id_nota: idNota,
+                id_user_pelaku: session.id_user,
+                alasan: alasan
+            };
+
             try {
-                let res = await fetch(`${API_URL}?action=getProducts`);
-                let data = await res.json();
-                const tbody = document.getElementById('admin-product-list');
-                tbody.innerHTML = '';
-                if (!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada data produk.</td></tr>`;
-                    return;
-                }
-                data.forEach(p => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-3 font-mono font-bold text-slate-600">${p.Barcode}</td>
-                            <td class="p-3 font-bold text-slate-800">${p["Nama Barang"]}</td>
-                            <td class="p-3 font-bold text-red-600">Rp ${Number(p["Harga Jual"]).toLocaleString('id-ID')}</td>
-                            <td class="p-3 font-bold text-slate-700">${p.Stok} Unit</td>
-                        </tr>
-                    `;
+                let response = await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
                 });
-            } catch (e) {
-                document.getElementById('admin-product-list').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-500 font-bold">Gagal memuat data dari Google Sheets.</td></tr>`;
+                let result = await response.json();
+
+                if (result.status === "success") {
+                    alert("Berhasil: " + result.message);
+                    document.getElementById('inputNotaId').value = '';
+                    document.getElementById('inputAlasan').value = '';
+                } else {
+                    alert("Gagal: " + result.message);
+                }
+            } catch (err) {
+                alert("Terjadi kesalahan koneksi server.");
             }
         }
     </script>
