@@ -30,17 +30,17 @@
         </button>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto w-full">
+    <!-- Main Content Area: Dinamis Berdasarkan Toggle Katalog di Kanan -->
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1700px] mx-auto w-full">
         
-        <!-- ================= KIRI: Keranjang Belanja & Aksi (6 Kolom) ================= -->
-        <div class="lg:col-span-6 bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5">
+        <!-- ================= KIRI: Keranjang Belanja & Numpad (Selalu Tampil) ================= -->
+        <div id="kolomKiri" class="lg:col-span-12 xl:col-span-6 bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5 transition-all duration-300">
             <div class="flex justify-between items-center mb-3 border-b pb-2">
                 <h2 class="text-lg font-bold text-red-600">🛒 Keranjang Belanja</h2>
                 <div class="flex gap-2">
-                    <!-- Tombol Toggle untuk Memunculkan/Menyembunyikan Katalog Barang secara Temporary -->
-                    <button onclick="toggleKatalogBarang()" id="btnToggleKatalog" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
-                        📂 Munculkan Katalog Barang
+                    <!-- Tombol Toggle Katalog di Sebelah Kanan -->
+                    <button onclick="toggleKatalogKanan()" id="btnToggleKatalog" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1">
+                        📂 Buka Katalog Barang (Kanan)
                     </button>
                     <span id="itemCount" class="text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-full font-bold self-center">0 Item</span>
                 </div>
@@ -54,7 +54,7 @@
             </div>
 
             <!-- Tabel Keranjang -->
-            <div class="flex-1 overflow-y-auto max-h-[280px] mb-4 pr-1 border rounded-xl p-2 bg-gray-50/50">
+            <div class="flex-1 overflow-y-auto max-h-[250px] mb-3 pr-1 border rounded-xl p-2 bg-gray-50/50">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="text-gray-400 border-b text-xs">
@@ -65,29 +65,29 @@
                         </tr>
                     </thead>
                     <tbody id="cartTableBody">
-                        <tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm italic">Keranjang kosong. Klik "Munculkan Katalog" atau scan barcode.</td></tr>
+                        <tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm italic">Keranjang kosong. Buka katalog di kanan atau scan barcode.</td></tr>
                     </tbody>
                 </table>
             </div>
 
             <!-- Ringkasan Total & Pembayaran -->
-            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 space-y-2 mb-3">
                 <div class="flex justify-between items-center">
-                    <span class="text-gray-600 font-medium">Total Tagihan:</span>
-                    <span id="displayTotal" class="text-2xl font-black text-red-600">Rp 0</span>
+                    <span class="text-gray-600 font-medium text-sm">Total Tagihan:</span>
+                    <span id="displayTotal" class="text-xl font-black text-red-600">Rp 0</span>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Jumlah Uang Tunai (Rp)</label>
+                    <label class="block text-[11px] font-semibold text-gray-600 mb-0.5">Jumlah Uang Tunai (Rp)</label>
                     <input type="text" id="uangBayar" placeholder="0" readonly 
-                        class="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 font-bold text-gray-800 text-lg">
+                        class="w-full px-3 py-2 rounded-xl bg-white border border-gray-300 font-bold text-gray-800 text-base">
                 </div>
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-xs font-semibold text-gray-600">Uang Kembalian:</span>
-                    <span id="displayKembalian" class="text-base font-bold text-green-600">Rp 0</span>
+                <div class="flex justify-between items-center pt-0.5">
+                    <span class="text-[11px] font-semibold text-gray-600">Uang Kembalian:</span>
+                    <span id="displayKembalian" class="text-sm font-bold text-green-600">Rp 0</span>
                 </div>
 
-                <div class="space-y-2 pt-2">
-                    <button onclick="prosesPembayaran()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-600/30 transition text-sm">
+                <div class="space-y-1.5 pt-1">
+                    <button onclick="prosesPembayaran()" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow transition text-xs">
                         💳 Bayar & Cetak Struk
                     </button>
                     <button onclick="bukaRiwayatNota()" class="w-full py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold rounded-xl text-xs transition">
@@ -95,67 +95,58 @@
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= KANAN: Panel Numpad Angka & Katalog Temporary (6 Kolom) ================= -->
-        <div class="lg:col-span-6 bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5 justify-between">
-            
-            <!-- Area Bawah / Kanan: Numpad Angka -->
-            <div>
-                <h2 class="text-lg font-bold text-red-600 mb-3 border-b pb-2">🔢 Panel Tombol Angka (Numpad)</h2>
-                <p class="text-xs text-gray-400 mb-3">Gunakan numpad untuk memasukkan nominal uang tunai pembayaran.</p>
-                
-                <div class="grid grid-cols-3 gap-2 max-w-sm mx-auto">
-                    <button onclick="tambahAngka('1')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">1</button>
-                    <button onclick="tambahAngka('2')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">2</button>
-                    <button onclick="tambahAngka('3')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">3</button>
-                    <button onclick="tambahAngka('4')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">4</button>
-                    <button onclick="tambahAngka('5')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">5</button>
-                    <button onclick="tambahAngka('6')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">6</button>
-                    <button onclick="tambahAngka('7')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">7</button>
-                    <button onclick="tambahAngka('8')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">8</button>
-                    <button onclick="tambahAngka('9')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">9</button>
-                    <button onclick="tambahAngka('00')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">00</button>
-                    <button onclick="tambahAngka('0')" class="py-3 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-base rounded-xl transition border">0</button>
-                    <button onclick="hapusAngka()" class="py-3 bg-red-100 hover:bg-red-200 text-red-700 font-bold text-base rounded-xl transition border border-red-200">⌫</button>
+            <!-- Numpad Kecil di Bawah Keranjang -->
+            <div class="border-t pt-2">
+                <p class="text-[10px] text-gray-400 mb-1 text-center font-semibold">PANEL ANGKA (NUMPAD)</p>
+                <div class="grid grid-cols-6 gap-1 max-w-sm mx-auto">
+                    <button onclick="tambahAngka('1')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">1</button>
+                    <button onclick="tambahAngka('2')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">2</button>
+                    <button onclick="tambahAngka('3')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">3</button>
+                    <button onclick="tambahAngka('4')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">4</button>
+                    <button onclick="tambahAngka('5')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">5</button>
+                    <button onclick="tambahAngka('6')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">6</button>
+                    <button onclick="tambahAngka('7')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">7</button>
+                    <button onclick="tambahAngka('8')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">8</button>
+                    <button onclick="tambahAngka('9')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">9</button>
+                    <button onclick="tambahAngka('0')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">0</button>
+                    <button onclick="tambahAngka('00')" class="py-2 bg-gray-100 hover:bg-red-50 hover:text-red-600 font-bold text-xs rounded-lg border">00</button>
+                    <button onclick="hapusAngka()" class="py-2 bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs rounded-lg border border-red-200">⌫</button>
+                </div>
+                <div class="text-center mt-1">
+                    <button onclick="bersihkanUangBayar()" class="text-[10px] text-gray-500 hover:underline">Reset Bayar</button>
                 </div>
             </div>
+        </div>
 
-            <div class="mt-4 pt-3 border-t text-center">
-                <button onclick="bersihkanUangBayar()" class="px-6 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-semibold transition">
-                    Reset Nominal Bayar
-                </button>
+        <!-- ================= KANAN: Kotak Dialog Katalog Barang (Muncul di Kanan & Tetap Terbuka) ================= -->
+        <div id="panelKatalogKanan" class="lg:col-span-6 bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5 hidden transition-all duration-300">
+            <div class="flex justify-between items-center mb-3 border-b pb-2">
+                <div>
+                    <h3 class="text-base font-black text-red-600">📦 Katalog / Inventory Barang</h3>
+                    <p class="text-[11px] text-gray-500">Klik barang untuk memasukkan ke keranjang (Kotak ini tidak akan menutup otomatis).</p>
+                </div>
+                <button onclick="toggleKatalogKanan()" class="px-3 py-1 bg-gray-200 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition">✕ Tutup</button>
+            </div>
+
+            <!-- Pencarian di Katalog Kanan -->
+            <div class="mb-3">
+                <input type="text" id="inputCariKanan" placeholder="Cari nama barang atau barcode..." oninput="filterKatalogKanan(this.value)"
+                    class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 border border-gray-300 focus:outline-none focus:border-red-500 text-gray-800 font-medium">
+            </div>
+
+            <!-- Grid Thumbnail Barang di Kanan -->
+            <div class="flex-1 overflow-y-auto max-h-[550px] pr-1">
+                <div id="gridThumbnailKanan" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <p class="text-gray-400 text-center col-span-full py-10 text-sm">Memuat katalog...</p>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- ================= PANEL KATALOG BARANG TEMPORARY (Muncul / Hilang Sesuai Tombol) ================= -->
-    <div id="panelKatalog" class="fixed inset-x-0 bottom-0 top-20 bg-white shadow-2xl z-40 hidden flex flex-col p-6 border-t-4 border-red-600 max-w-7xl mx-auto rounded-t-3xl">
-        <div class="flex justify-between items-center mb-4 border-b pb-3">
-            <div>
-                <h3 class="text-xl font-black text-red-600">📦 Katalog Barang 805 Mart</h3>
-                <p class="text-xs text-gray-500">Klik langsung pada thumbnail barang di bawah untuk memasukkannya ke keranjang.</p>
-            </div>
-            <button onclick="toggleKatalogBarang()" class="px-4 py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition text-sm">✕ Tutup Katalog</button>
-        </div>
-
-        <!-- Kolom Pencarian Cepat di dalam Katalog -->
-        <div class="mb-4">
-            <input type="text" id="inputCariKatalog" placeholder="Cari nama barang atau barcode..." oninput="filterKatalogBarang(this.value)"
-                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-300 focus:outline-none focus:border-red-500 text-gray-800 font-medium">
-        </div>
-
-        <!-- Grid Thumbnail yang Bisa Diklik -->
-        <div class="flex-1 overflow-y-auto pr-2 max-h-[60vh]">
-            <div id="gridThumbnailKatalog" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">
-                <p class="text-gray-400 text-center col-span-full py-10">Memuat katalog...</p>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzN0S2DBKt7SimnjNdXx3WhHrK1wtRahpl7U3SjTazGwoSB69wfl-18qX7sdzZfDkMZzg/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwgS5ENG-gJa16AgDNajFYaKWTytEaXKR8intQGUMp2VUqj3vuM47O5C-Md7yGG7PIrFg/exec";
 
         document.getElementById('kasirNama').innerText = session.nama;
         document.getElementById('kasirFoto').src = session.foto_url || 'https://via.placeholder.com/150';
@@ -163,7 +154,7 @@
         let cart = [];
         let allProducts = [];
         let stringUangBayar = "";
-        let katalogAktif = false;
+        let katalogTerbuka = false;
 
         function logout() {
             localStorage.removeItem('session_805');
@@ -182,59 +173,62 @@
 
                 if (result.status === "success") {
                     allProducts = result.data;
-                    renderGridThumbnail(allProducts);
+                    renderThumbnailKanan(allProducts);
                 }
             } catch (err) {
                 console.error("Gagal memuat katalog:", err);
             }
         }
 
-        // Fungsi Tombol Muncul/Sembunyi Katalog (Temporary)
-        function toggleKatalogBarang() {
-            katalogAktif = !katalogAktif;
-            const panel = document.getElementById('panelKatalog');
+        // Fungsi Membuka/Menutup Panel Katalog di Sebelah Kanan
+        function toggleKatalogKanan() {
+            katalogTerbuka = !katalogTerbuka;
+            const panelKanan = document.getElementById('panelKatalogKanan');
+            const kolomKiri = document.getElementById('kolomKiri');
             const btn = document.getElementById('btnToggleKatalog');
 
-            if (katalogAktif) {
-                panel.classList.remove('hidden');
-                btn.innerText = "📂 Sembunyikan Katalog";
+            if (katalogTerbuka) {
+                panelKanan.classList.remove('hidden');
+                kolomKiri.className = "lg:col-span-12 xl:col-span-6 bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5 transition-all duration-300";
+                btn.innerText = "📂 Tutup Katalog Kanan";
                 btn.className = "px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1";
-                document.getElementById('inputCariKatalog').focus();
+                document.getElementById('inputCariKanan').focus();
             } else {
-                panel.classList.add('hidden');
-                btn.innerText = "📂 Munculkan Katalog Barang";
+                panelKanan.classList.add('hidden');
+                kolomKiri.className = "lg:col-span-12 xl:col-span-12 max-w-3xl mx-auto w-full bg-white border border-gray-200 shadow-xl rounded-2xl flex flex-col p-5 transition-all duration-300";
+                btn.innerText = "📂 Buka Katalog Barang (Kanan)";
                 btn.className = "px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow transition flex items-center gap-1";
                 document.getElementById('inputBarcode').focus();
             }
         }
 
-        // Render Thumbnail di Panel Katalog
-        function renderGridThumbnail(products) {
-            const grid = document.getElementById('gridThumbnailKatalog');
+        // Render Thumbnail di Panel Kanan
+        function renderThumbnailKanan(products) {
+            const grid = document.getElementById('gridThumbnailKanan');
             grid.innerHTML = "";
 
             if (products.length === 0) {
-                grid.innerHTML = `<p class="text-gray-400 text-center col-span-full py-10">Produk tidak ditemukan.</p>`;
+                grid.innerHTML = `<p class="text-gray-400 text-center col-span-full py-10 text-sm">Produk tidak ditemukan.</p>`;
                 return;
             }
 
             products.forEach(item => {
                 let stok = Number(item.stok);
                 let stokBadge = stok <= Number(item.min_stok) ? 
-                    `<span class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded font-bold">Stok: ${stok}</span>` : 
-                    `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">Stok: ${stok}</span>`;
+                    `<span class="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">Stok: ${stok}</span>` : 
+                    `<span class="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">Stok: ${stok}</span>`;
 
                 grid.innerHTML += `
                     <div onclick="pilihBarangThumbnail('${item.kode_barang}')" 
-                        class="bg-white border-2 border-gray-100 hover:border-red-500 hover:shadow-xl p-3 rounded-xl cursor-pointer transition transform hover:-translate-y-1 flex flex-col justify-between group select-none">
+                        class="bg-white border-2 border-gray-100 hover:border-red-500 hover:shadow-md p-2.5 rounded-xl cursor-pointer transition transform hover:-translate-y-0.5 flex flex-col justify-between group select-none">
                         <div>
-                            <div class="w-full h-16 bg-red-50 rounded-lg mb-2 flex items-center justify-center group-hover:bg-red-100 transition">
-                                <span class="text-2xl">📦</span>
+                            <div class="w-full h-12 bg-red-50 rounded-lg mb-1.5 flex items-center justify-center group-hover:bg-red-100 transition">
+                                <span class="text-lg">📦</span>
                             </div>
-                            <h3 class="font-bold text-xs text-gray-800 line-clamp-2 mb-1 group-hover:text-red-600 transition">${item.nama_barang}</h3>
+                            <h4 class="font-bold text-[11px] text-gray-800 line-clamp-2 mb-1 group-hover:text-red-600 transition">${item.nama_barang}</h4>
                         </div>
-                        <div class="pt-2 border-t border-gray-50 flex justify-between items-center">
-                            <span class="text-xs font-black text-red-600">Rp ${Number(item.harga_jual).toLocaleString()}</span>
+                        <div class="pt-1 border-t border-gray-50 flex justify-between items-center">
+                            <span class="text-[11px] font-black text-red-600">Rp ${Number(item.harga_jual).toLocaleString()}</span>
                             ${stokBadge}
                         </div>
                     </div>
@@ -242,18 +236,18 @@
             });
         }
 
-        function filterKatalogBarang(keyword) {
+        function filterKatalogKanan(keyword) {
             keyword = keyword.toLowerCase();
             let filtered = allProducts.filter(p => 
                 p.nama_barang.toLowerCase().includes(keyword) || p.kode_barang.toLowerCase().includes(keyword)
             );
-            renderGridThumbnail(filtered);
+            renderThumbnailKanan(filtered);
         }
 
-        // Ketika Thumbnail Diklik -> Langsung Masuk ke Keranjang & Otomatis Sembunyikan Katalog
+        // Saat Thumbnail Diklik -> Masuk ke Keranjang, TETAPI KOTAK KATALOG TETAP TERBUKA
         function pilihBarangThumbnail(kode) {
             tambahKeKeranjangByKode(kode);
-            toggleKatalogBarang(); // Otomatis menutup panel katalog setelah diklik agar kembali ke layar kasir utama
+            // Kotak katalog sengaja TIDAK ditutup agar bisa terus diklik berulang kali
         }
 
         // Tambah via Scan Barcode di Input Utama
@@ -306,7 +300,7 @@
             let totalItemCount = 0;
 
             if (cart.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm italic">Keranjang kosong. Klik "Munculkan Katalog" atau scan barcode.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-gray-400 text-sm italic">Keranjang kosong. Buka katalog di kanan atau scan barcode.</td></tr>`;
                 document.getElementById('displayTotal').innerText = "Rp 0";
                 document.getElementById('itemCount').innerText = "0 Item";
                 return;
@@ -317,19 +311,19 @@
                 totalItemCount += item.jumlah;
                 tbody.innerHTML += `
                     <tr class="border-b border-gray-100 text-xs">
-                        <td class="py-3 pr-2">
+                        <td class="py-2.5 pr-2">
                             <p class="font-bold text-gray-800">${item.nama_barang}</p>
                             <p class="text-[10px] text-gray-400">Rp ${item.harga_jual.toLocaleString()}</p>
                         </td>
-                        <td class="py-3 text-center">
+                        <td class="py-2.5 text-center">
                             <div class="inline-flex items-center border rounded-lg bg-gray-50">
                                 <button onclick="ubahQty(${index}, -1)" class="px-1.5 py-0.5 text-red-600 font-bold hover:bg-gray-200 rounded-l">-</button>
                                 <span class="px-2 font-bold">${item.jumlah}</span>
                                 <button onclick="ubahQty(${index}, 1)" class="px-1.5 py-0.5 text-red-600 font-bold hover:bg-gray-200 rounded-r">+</button>
                             </div>
                         </td>
-                        <td class="py-3 text-right font-bold text-gray-700">Rp ${item.subtotal.toLocaleString()}</td>
-                        <td class="py-3 text-center">
+                        <td class="py-2.5 text-right font-bold text-gray-700">Rp ${item.subtotal.toLocaleString()}</td>
+                        <td class="py-2.5 text-center">
                             <button onclick="hapusItem(${index})" class="text-red-500 hover:text-red-700 font-bold p-1 bg-red-50 rounded-md">✕</button>
                         </td>
                     </tr>
