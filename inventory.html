@@ -30,18 +30,17 @@
     <!-- Main Content Area -->
     <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- Kolom Kiri: Form Input Barang Masuk / Restock & Scan Barcode -->
+        <!-- Kolom Kiri: Form Input / Scan Barcode -->
         <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
-            <h2 class="text-lg font-semibold text-cyan-300 mb-4">Input Barang Masuk / Restock</h2>
+            <h2 class="text-lg font-semibold text-cyan-300 mb-2">Input / Scan Barang Masuk</h2>
+            <p class="text-xs text-gray-400 mb-4">Arahkan scanner ke barcode produk. Jika rusak, ketik manual.</p>
             
             <form onsubmit="tambahBarangMasuk(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-300 mb-1">Scan Barcode / Kode SKU</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="kodeBarang" required placeholder="Klik lalu scan barcode..." 
-                            class="flex-1 px-4 py-3 rounded-xl bg-gray-900 border border-gray-700 focus:outline-none focus:border-cyan-400 text-white">
-                        <button type="button" onclick="focusBarcode()" class="px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold">Scan</button>
-                    </div>
+                    <input type="text" id="kodeBarang" required placeholder="Scan barcode di sini..." 
+                        onchange="cekBarcodeOtomatis(this.value)"
+                        class="w-full px-4 py-3 rounded-xl bg-gray-900 border border-cyan-500/50 focus:outline-none focus:border-cyan-400 text-white font-mono text-cyan-300">
                 </div>
                 <div>
                     <label class="block text-sm text-gray-300 mb-1">Nama Barang</label>
@@ -72,10 +71,10 @@
             </form>
         </div>
 
-        <!-- Kolom Tengah & Kanan: Monitoring Stok Gudang & Pemberitahuan Sisa -->
+        <!-- Kolom Tengah & Kanan: Monitoring Stok & Pemberitahuan Sisa -->
         <div class="lg:col-span-2 bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-cyan-300">Monitoring Stok Gudang Real-Time</h2>
+                <h2 class="text-lg font-semibold text-cyan-300">Monitoring Stok Gudang & Peringatan</h2>
                 <button onclick="muatDataInventory()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-lg text-xs font-semibold">🔄 Refresh Data</button>
             </div>
             
@@ -102,21 +101,19 @@
     </main>
 
     <script>
+        // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzN0S2DBKt7SimnjNdXx3WhHrK1wtRahpl7U3SjTazGwoSB69wfl-18qX7sdzZfDkMZzg/exec";
 
         // Inisialisasi Nama Petugas Inventory
         document.getElementById('inventoryNama').innerText = session.nama;
+        let cacheProducts = [];
 
         function logout() {
             localStorage.removeItem('session_805');
             window.location.href = "index.html";
         }
 
-        function focusBarcode() {
-            document.getElementById('kodeBarang').focus();
-        }
-
-        // Ambil data inventory dari Google Sheets via GAS saat halaman dibuka
+        // Ambil data inventory dari Google Sheets via GAS
         async function muatDataInventory() {
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">Memuat data dari server...</td></tr>`;
@@ -127,19 +124,19 @@
 
                 if (result.status === "success") {
                     tbody.innerHTML = "";
-                    let products = result.data;
+                    cacheProducts = result.data;
 
-                    if (products.length === 0) {
+                    if (cacheProducts.length === 0) {
                         tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">Belum ada data barang.</td></tr>`;
                         return;
                     }
 
-                    products.forEach(item => {
+                    cacheProducts.forEach(item => {
                         let stok = Number(item.stok);
                         let minStok = Number(item.min_stok);
                         let statusBadge = "";
 
-                        if (stlog <= minStok || stok <= 5) {
+                        if (stok <= minStok) {
                             statusBadge = `<span class="bg-red-500/20 text-red-400 px-2.5 py-1 rounded-full text-xs font-bold border border-red-500/30">⚠️ Stok Menipis</span>`;
                         } else {
                             statusBadge = `<span class="bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full text-xs font-bold border border-green-500/30">Aman</span>`;
@@ -160,6 +157,27 @@
                 }
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-red-400">Kesalahan koneksi server.</td></tr>`;
+            }
+        }
+
+        // Fungsi Otomatis saat Barcode di-scan atau diketik
+        function cekBarcodeOtomatis(kode) {
+            kode = kode.trim();
+            if (!kode) return;
+
+            let found = cacheProducts.find(p => p.kode_barang === kode);
+            if (found) {
+                // Jika produk sudah ada, auto-fill untuk restock
+                document.getElementById('namaBarang').value = found.nama_barang;
+                document.getElementById('hargaJual').value = found.harga_jual;
+                document.getElementById('minStok').value = found.min_stok;
+                document.getElementById('jumlahMasuk').focus();
+            } else {
+                // Jika produk baru, kosongkan form agar bisa diisi barang baru
+                document.getElementById('namaBarang').value = '';
+                document.getElementById('hargaJual').value = '';
+                document.getElementById('minStok').value = '5';
+                document.getElementById('namaBarang').focus();
             }
         }
 
@@ -192,7 +210,8 @@
                     document.getElementById('jumlahMasuk').value = '';
                     document.getElementById('minStok').value = '';
                     document.getElementById('hargaJual').value = '';
-                    muatDataInventory(); // Refresh tabel secara otomatis
+                    document.getElementById('kodeBarang').focus();
+                    muatDataInventory();
                 } else {
                     alert("Gagal: " + result.message);
                 }
