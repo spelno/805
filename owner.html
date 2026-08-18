@@ -1,19 +1,167 @@
-<script>
-    // Cek Sesi Keamanan
-    const session = JSON.parse(localStorage.getItem('session_805'));
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - 805 Mart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // SATPAM KEAMANAN: Cek apakah user benar-benar Owner (Level 1)
+        const session = JSON.parse(localStorage.getItem('session_805'));
+        if (!session || session.level != 1) {
+            alert("Akses ditolak! Area khusus Owner.");
+            window.location.href = "index.html";
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
-    // Jika tidak ada sesi atau level bukan Owner (1), tendang keluar!
-    if (!session || session.level != 1) {
-        alert("Akses ditolak! Anda harus login sebagai Owner.");
-        window.location.href = "index.html";
-    } else {
-        // Tampilkan nama atau foto profil owner di elemen tertentu jika mau
-        console.log("Selamat datang, " + session.nama);
-    }
+    <!-- Header / Navbar Owner -->
+    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-extrabold text-cyan-400">805 Mart - Owner Dashboard</h1>
+            <p class="text-sm text-gray-300">Selamat datang, <span id="ownerNama" class="font-semibold text-white"></span></p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <!-- Tombol Asisten Suara -->
+            <button onclick="mulaiPerintahSuara()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                🎙️ Voice Command
+            </button>
+            <button onclick="logout()" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-sm font-semibold transition">
+                Keluar
+            </button>
+        </div>
+    </header>
 
-    // Fungsi Logout
-    function logout() {
-        localStorage.removeItem('session_805');
-        window.location.href = "index.html";
-    }
-</script>
+    <!-- Main Content Area -->
+    <main class="flex-1 p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Kartu 1: Total Pendapatan Hari Ini -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+                <p class="text-sm text-gray-400 font-medium">Total Pendapatan Hari Ini</p>
+                <h2 id="valPendapatan" class="text-4xl font-extrabold text-cyan-400 mt-2">Memuat...</h2>
+            </div>
+            <p class="text-xs text-gray-500 mt-4">*Diperbarui secara real-time dari sistem kasir</p>
+        </div>
+
+        <!-- Kartu 2: Shift & Pendapatan Kasir -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
+            <h3 class="text-lg font-semibold text-cyan-300 mb-3">Status Shift & Kasir</h3>
+            <div id="containerShift" class="space-y-3 flex-1 overflow-y-auto max-h-40">
+                <p class="text-sm text-gray-400">Memuat data shift kasir...</p>
+            </div>
+        </div>
+
+        <!-- Kartu 3: Inventory Warning (Stok Menipis) -->
+        <div class="bg-gray-800/50 backdrop-blur border border-gray-700 p-6 rounded-2xl flex flex-col">
+            <h3 class="text-lg font-semibold text-red-400 mb-3">⚠️ Peringatan Stok Menipis</h3>
+            <div id="containerWarning" class="space-y-2 flex-1 overflow-y-auto max-h-40">
+                <p class="text-sm text-gray-400">Memeriksa stok barang...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda yang valid
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbynWGswG834HXNGAB1bV7bvFfZgraJVShRy1Bu-fsnp6NCmGWwUQUWRtyzCFeZo-I_VMA/exec";
+
+        // Inisialisasi Nama Owner
+        document.getElementById('ownerNama').innerText = session.nama;
+
+        // Ambil Data Dashboard saat halaman dimuat
+        window.onload = function() {
+            loadOwnerDashboard();
+        };
+
+        function logout() {
+            localStorage.removeItem('session_805');
+            window.location.href = "index.html";
+        }
+
+        async function loadOwnerDashboard() {
+            try {
+                let response = await fetch(`${GAS_URL}?action=getOwnerDashboard`);
+                let result = await response.json();
+
+                if (result.status === "success") {
+                    // Update Pendapatan
+                    document.getElementById('valPendapatan').innerText = "Rp " + Number(result.pendapatan_hari_ini).toLocaleString();
+
+                    // Update Warning Stok
+                    let warningDiv = document.getElementById('containerWarning');
+                    warningDiv.innerHTML = "";
+                    if (result.warning_stok.length === 0) {
+                        warningDiv.innerHTML = `<p class="text-sm text-green-400">Semua stok barang aman.</p>`;
+                    } else {
+                        result.warning_stok.forEach(item => {
+                            warningDiv.innerHTML += `
+                                <div class="bg-gray-900/60 p-2.5 rounded-xl border border-red-500/30 flex justify-between items-center text-sm">
+                                    <span class="font-medium">${item.nama}</span>
+                                    <span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-xs font-bold">Sisa: ${item.stok}</span>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Simulasi Shift Kasir (Bisa dihubungkan ke data Shift_Logs GAS nantinya)
+                    let shiftDiv = document.getElementById('containerShift');
+                    shiftDiv.innerHTML = `
+                        <div class="bg-gray-900/60 p-2.5 rounded-xl border border-gray-700 text-sm flex justify-between items-center">
+                            <div>
+                                <p class="font-semibold text-white">Kasir A (Budi)</p>
+                                <p class="text-xs text-gray-400">Masuk: 08:00 - Shift Pagi</p>
+                            </div>
+                            <span class="text-cyan-400 font-bold">Rp 1.250.000</span>
+                        </div>
+                    `;
+
+                } else {
+                    alert("Gagal memuat data dashboard.");
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('valPendapatan').innerText = "Gagal memuat";
+            }
+        }
+
+        // Fitur Asisten Suara (Voice Command & Report)
+        function mulaiPerintahSuara() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Browser Anda tidak mendukung fitur perintah suara.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID';
+            recognition.start();
+
+            recognition.onstart = function() {
+                speakText("Silakan berikan perintah, Owner.");
+            };
+
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript.toLowerCase();
+                console.log("Perintah suara diterima: ", command);
+
+                if (command.includes("pendapatan") || command.includes("omzet")) {
+                    let total = document.getElementById('valPendapatan').innerText;
+                    speakText(`Total pendapatan hari ini adalah ${total}`);
+                } else if (command.includes("stok") || command.includes("barang")) {
+                    speakText("Memeriksa laporan stok menipis pada sistem.");
+                } else {
+                    speakText("Maaf, perintah tidak dikenali.");
+                }
+            };
+        }
+
+        function speakText(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'id-ID';
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+</body>
+</html>
