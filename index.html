@@ -1,96 +1,78 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - 805 Mart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>DELAPAN KOSONG LIMA MART</title>
+
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="glass p-8 rounded-2xl shadow-2xl w-full max-w-md text-white">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold tracking-wider text-cyan-400">805 MART</h1>
-            <p class="text-gray-400 text-sm mt-1">Silakan masuk sesuai hak akses Anda</p>
-        </div>
+<body>
 
-        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Username</label>
-                <input type="text" id="username" required 
-                    class="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-cyan-400">
-            </div>
+  <main class="login-page">
 
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
-                <input type="password" id="password" required 
-                    class="w-full px-4 py-3 rounded-xl bg-gray-900/50 border border-gray-700 text-white focus:outline-none focus:border-cyan-400">
-            </div>
+    <div class="login-card">
 
-            <button type="submit" id="btnSubmit"
-                class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 font-semibold text-gray-950 transition duration-200 shadow-lg shadow-cyan-500/20">
-                Masuk Sistem
-            </button>
-        </form>
+      <div class="brand">
+        <div class="brand-mark">805</div>
 
-        <p id="errorMsg" class="mt-4 text-center text-sm text-red-400 hidden"></p>
+        <h1>DELAPAN KOSONG LIMA</h1>
+        <p>MART</p>
+      </div>
+
+
+      <div class="login-form">
+
+        <label for="name">
+          Nama Pengguna
+        </label>
+
+        <input
+          type="text"
+          id="name"
+          placeholder="Masukkan nama pengguna"
+          autocomplete="username"
+        >
+
+
+        <label for="pin">
+          PIN
+        </label>
+
+        <input
+          type="password"
+          id="pin"
+          placeholder="6 digit PIN"
+          maxlength="6"
+          inputmode="numeric"
+          autocomplete="current-password"
+        >
+
+
+        <button
+          id="loginButton"
+          type="button"
+          onclick="login()"
+        >
+          MASUK
+        </button>
+
+
+        <div
+          id="message"
+          class="message"
+        ></div>
+
+      </div>
+
     </div>
 
-    <script>
-        // Ganti URL di bawah ini dengan URL Web App Google Apps Script Anda
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzN0S2DBKt7SimnjNdXx3WhHrK1wtRahpl7U3SjTazGwoSB69wfl-18qX7sdzZfDkMZzg/exec";
+  </main>
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('btnSubmit');
-            const errorMsg = document.getElementById('errorMsg');
 
-            btn.disabled = true;
-            btn.innerText = "Memeriksa...";
-            errorMsg.classList.add('hidden');
+  <script src="app.js"></script>
 
-            try {
-                const response = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
-                const result = await response.json();
-
-                if (result.status === "success") {
-                    // Simpan sesi ke Local Storage
-                    localStorage.setItem('session_805', JSON.stringify(result.user));
-
-                    // Routing otomatis berdasarkan Level User
-                    const level = result.user.level;
-                    if (level == 1) window.location.href = "owner.html";
-                    else if (level == 2) window.location.href = "admin.html";
-                    else if (level == 3) window.location.href = "inventory.html";
-                    else if (level == 4) window.location.href = "kasir.html";
-                    else {
-                        errorMsg.innerText = "Level akses tidak dikenali!";
-                        errorMsg.classList.remove('hidden');
-                    }
-                } else {
-                    errorMsg.innerText = result.message;
-                    errorMsg.classList.remove('hidden');
-                }
-            } catch (err) {
-                errorMsg.innerText = "Terjadi kesalahan koneksi ke server.";
-                errorMsg.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Masuk Sistem";
-            }
-        }
-    </script>
 </body>
 </html>
